@@ -88,3 +88,14 @@ class IntervalComputation:
                 max_indexd = cur_maxd
                 maxi = i
         return max_indexd, maxi
+
+    def print_BettiNumbers(self):
+        repr = ''
+        for dim, li in enumerate(self.betti_intervals):
+            repr += ('dim: ' + str(dim) + '\n')
+            for tup in li:
+                if tup[0] == tup[1]:
+                    continue
+                repr += str(tup)
+            repr += '\n'
+        print repr

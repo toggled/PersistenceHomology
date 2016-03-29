@@ -1,10 +1,13 @@
 class KSimplex:
-    def __init__(self, listofvertices,degree = None):
-        self.kvertices = listofvertices
+    def __init__(self, listofvertices, degree=None):
+        if type(listofvertices[0]) == str:
+            self.kvertices = [int(i) for i in listofvertices]
+        else:
+            self.kvertices = listofvertices
         self.k = len(listofvertices) - 1
         self.name = str(self.k) + '-simplex: ' + str(listofvertices)
         self.id = -1  # This id is used as index while building transformation matrix
-        self.degree = degree # Degree of a KSimplex is like arrival time of that ksimplex in the simpcomp
+        self.degree = degree  # Degree of a KSimplex is like arrival time of that ksimplex in the simpcompne
 
     def __str__(self):
         # return nice string representation of the k-simplex like 01, 12, 012, 1234 etc
@@ -20,6 +23,8 @@ class KSimplex:
             return sorted(self.kvertices) == sorted(other.kvertices)
         return False
 
+    def isEmpty(self):
+        return self.k < 0
 
 class SimplicialComplex:
     def __init__(self):
@@ -27,7 +32,7 @@ class SimplicialComplex:
         self.tableofksimplex = {}  # key = k , value = list of k-simplices in the simplicial_complex
         self.maxK = 0  # Keep track of highest Dimensional simplex in the complex
         self.count_id = {}  # for assigning unique id to each set of simplex
-        self.simplex_idmap = {}  # Although redundant. but it eliminates the need to maintain mapping inside BoundaryGroup
+        self.simplex_idmap = {}  # Although redundant. but it eliminates the need to maintain mapping in    side BoundaryGroup
 
     def get_allkth_simplices(self, k):
         return sorted([obj for obj in self.tableofksimplex.get(k, [])], key=lambda ob: ob.id)

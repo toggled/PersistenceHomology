@@ -1,10 +1,10 @@
 from __future__ import absolute_import
 from src.simplex import KSimplex, SimplicialComplex
 from src.Filtration import Filtration
-
-#from src.boundaryoperator import Boundary
-#from src.BoundaryGroup import KthBoundaryGroup
-
+from src.boundaryoperator import Boundary
+from src.ReductionAlgorithm import StandardMatrix
+import copy
+from src.ComputeInterval import IntervalComputation
 
 def test_manual_simplex():
     sim = KSimplex([1, 2, 3])
@@ -52,42 +52,51 @@ def test_nested_boundary_simplicialcomplex():
             print 'Boundary of: ', str(k_sim), ': ', str(delta_k)
 
 
-def test_kth_boundary_group():
-    sigma = SimplicialComplex()
-    # sigma.add_simplex_fromfile('test_simplexfromfile.txt')
-    sigma.add_simplex_fromfile("../../data/test_simplexfromfile.txt")
-
-    # for k in range(sigma.maxK):  # not maxK + 1
-    for k in range(0, 3):  # not maxK + 1
-        print str(k) + '-th Boundary group:'
-        Bk = KthBoundaryGroup(k)
-        Bk.construct_from_simplex(sigma.get_allkth_simplices(k + 1), sigma.simplex_idmap,
-                                  sigma.get_allkth_simplices(k))  # Send all the k+1 simplices to it
-        print Bk.get_transformation_matrix()
-        Bk.print_columnobjects()
-        Bk.print_rowobjects()
-
 def test_manual_Filtration():
     fil = Filtration()
-    fil.add_simplex_toith_filtration(0,[0])
-    fil.add_simplex_toith_filtration(0,[1])
-    fil.add_simplex_toith_filtration(1,[2])
-    fil.add_simplex_toith_filtration(1,[3])
-    fil.add_simplex_toith_filtration(1,[0,1])
-    fil.add_simplex_toith_filtration(1,[1,2]) # The simplices should be sorted
+    fil.add_simplex_toith_filtration(0, [0])
+    fil.add_simplex_toith_filtration(0, [1])
+    fil.add_simplex_toith_filtration(1, [2])
+    fil.add_simplex_toith_filtration(1, [3])
+    fil.add_simplex_toith_filtration(1, [0, 1])
+    fil.add_simplex_toith_filtration(1, [1, 2])  # The simplices should be sorted
+    fil.add_simplex_toith_filtration(2, [0, 2])
     print fil
+    # print [str(sigma)+" id: "+ str(sigma.id)  for sigma in fil.get_ksimplices_from_ithFiltration(0,0)]
 
 def test_File_Filtration():
     fil = Filtration()
     fil.add_simplices_from_file('../../data/test_simplexfromfile.txt')
-    print fil
+    # for i in range(3):
+    #    print str(fil.get_ithfiltration(i))
+
+
+    Mk = StandardMatrix(fil, 1)
+    Mk_plusone = StandardMatrix(fil, 2)
+    mkhat, mkplusonehat = Mk.get_reduced_matrices(Mk_plusone.get_transpose())
+
+    for p in mkhat:
+        print str(p)
+    for p in mkplusonehat:
+        print str(p)
+
+
+def test_persistencehomology():
+    fil = Filtration()
+    fil.add_simplices_from_file('../../data/test_simplexfromfile.txt')
+    # TO DO: Implement the papers version here.
+    ci = IntervalComputation(fil)
+    ci.compute_intervals(2)
+    ci.print_BettiNumbers()
+    print ci.betti_intervals
 
 if __name__ == "__main__":
-    test_File_Filtration()
+    # test_File_Filtration()
+    test_persistencehomology()
     #test_manual_Filtration()
-    #test_manual_simplex()
-    #test_file_simplex()
+    # test_manual_simplex()
+    # test_file_simplex()
     # test_boundary_op()
     # test_nested_boundary()
     # test_nested_boundary_simplicialcomplex()
-    #test_kth_boundary_group()
+    # test_kth_boundary_group()
