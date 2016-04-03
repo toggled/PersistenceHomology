@@ -20,6 +20,14 @@ class iFiltration:
     def get_all_ksimplices(self, k):
         return self.simplicial_complex.get_allkth_simplices(k)
 
+    def has_simplex(self, Ksim):
+        assert isinstance(Ksim, KSimplex)
+        k = Ksim.k
+        for sim in self.simplicial_complex.get_allkth_simplices(k):
+            if sim == Ksim:
+                return True
+        return False
+
     def __str__(self):
         return str(self.simplicial_complex)
 
@@ -43,6 +51,10 @@ class Filtration:
         :return: List of Simplex objects from the simplicial complex at i-th filtration
         '''
         return self.get_ithfiltration(i).get_all_ksimplices(k)
+
+    def has_ksimplex_in_ithfiltration(self, KSim, i):
+        assert isinstance(KSim, KSimplex)
+        return self.get_ithfiltration(i).has_simplex(KSim)
 
     def add_simplex_toith_filtration(self, i, simplex):
         '''
@@ -74,6 +86,29 @@ class Filtration:
                 ksimplex_obj = KSimplex(sorted([int(v) for v in
                                                 simplex.split()]))  # Building the K-simplex object . Always insert them in sorted order to avoid orientation conflict between higher dimensional simplices.
                 self.add_simplex_toith_filtration(int(filtr_idx), ksimplex_obj)
+
+    def add_simplices_from_cliquefiles(self, dir):
+        base = 'clique_'
+        from os import path, listdir
+        for fil in listdir(dir):
+            if fil.startswith(base):
+                filtr_idx = int(fil.split("_")[1][0])
+                print 'adding filtration: ' + str(filtr_idx)
+                with open(dir + '/' + fil, 'r') as fp:
+                    while 1:
+                        simplex = fp.readline()
+                        # print simplex
+                        if not simplex:
+                            break
+                        ksimplex_obj = KSimplex(sorted(int(v) for v in simplex.split()))
+                        added_already = False
+                        for i in range(filtr_idx - 1):
+                            if self.has_ksimplex_in_ithfiltration(ksimplex_obj, i):
+                                added_already = True
+
+                        if not added_already:
+                            self.add_simplex_toith_filtration(filtr_idx - 1, ksimplex_obj)
+
 
         def __str__(self):
             repr = ''
