@@ -83,12 +83,19 @@ def test_File_Filtration():
 
 def test_persistencehomology():
     fil = Filtration()
+    # name = "/Users/naheed/NetBeansProjects/Toy-1"
+    # name = "/Users/naheed/NetBeansProjects/jplex_explore/3437-1"
+    # name = "/Users/naheed/NetBeansProjects/Toy-2 262143"
+    # name = "/Users/naheed/NetBeansProjects/Toy-3 2047 (11 Vertex Big Cylce)"
+    # fil.add_simplices_from_cliquefiles(name)
+
     fil.add_simplices_from_file('../../data/test_simplexfromfile.txt')
     # TO DO: Implement the papers version here.
     ci = IntervalComputation(fil)
     ci.compute_intervals(2)
     ci.print_BettiNumbers()
-    print ci.betti_intervals
+    ci.get_representativs()
+    #print ci.betti_intervals
 
 if __name__ == "__main__":
     # test_File_Filtration()
