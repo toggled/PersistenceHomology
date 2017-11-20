@@ -46,13 +46,13 @@ class IntervalComputation:
             self.representative_cycles = [[] for i in range(K + 1)]
         else:
             self.betti_intervals = [[] for i in range(self.maxdim + 1)]
-            self.representative_cycles = [[] for i in range(K + 1)]
+            self.representative_cycles = [[] for i in range(self.maxdim + 1)]
 
         for j, sigmaj in enumerate(self.filtration_ar):
             if K:
                 if sigmaj.k > K + 1:  # We only want  dimension upto K, i.e birth-death of 0,1,...,upto K simplices.
                     break  # K-simplices occur as boundary of K+1 simplices. therefore we need sigmaj.k <= K+1
-            d, z = self.remove_pivot_rows(sigmaj)
+            d = self.remove_pivot_rows(sigmaj)
             #print d
             if len(d) == 0:
                 self.marked[j] = True
@@ -64,7 +64,6 @@ class IntervalComputation:
                 self.T[i] = d
                 if (self.filtration_ar[i].degree <= sigmaj.degree):
                     self.betti_intervals[k].append((self.filtration_ar[i].degree, sigmaj.degree))
-                    self.representative_cycles[k].append(z)
 
         for j, sigmaj in enumerate(self.filtration_ar):
             if K:
@@ -85,10 +84,11 @@ class IntervalComputation:
             if self.marked[self.simplex_to_indexmap[tuple(sigma.kvertices)]]:
                 d.add(tuple(sigma.kvertices))
 
+        z.append(simplex)
         while 1:
             if len(d) == 0:
                 break
-            z.append(simplex)
+
             max_indexd, maxi_d = self.get_maxindexd(d)
             if self.j_ar[max_indexd] is None:
                 break
@@ -96,7 +96,12 @@ class IntervalComputation:
             # Gaussian elimination here
             d.symmetric_difference_update(self.T[max_indexd])
 
-        return d,z
+        if len(d) == 0:
+            k = simplex.k
+            if k < len(self.representative_cycles):
+                self.representative_cycles[k].append(z)
+
+        return d
 
     def get_maxindexd(self, set_ofsimplex_d):
 

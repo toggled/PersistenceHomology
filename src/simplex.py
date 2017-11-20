@@ -32,7 +32,7 @@ class SimplicialComplex:
         self.tableofksimplex = {}  # key = k , value = list of k-simplices in the simplicial_complex
         self.maxK = 0  # Keep track of highest Dimensional simplex in the complex
         self.count_id = {}  # for assigning unique id to each set of simplex
-        self.simplex_idmap = {}  # Although redundant. but it eliminates the need to maintain mapping in    side BoundaryGroup
+
 
     def get_allkth_simplices(self, k):
         return sorted([obj for obj in self.tableofksimplex.get(k, [])], key=lambda ob: ob.id)
@@ -65,8 +65,6 @@ class SimplicialComplex:
             self.count_id[ksimplex.k] = 0
         self.tableofksimplex[ksimplex.k].append(ksimplex)
         ksimplex.id = self.count_id[ksimplex.k]  # assigning id
-        self.simplex_idmap[tuple(
-            ksimplex.kvertices)] = ksimplex.id  # Assign id to each added simplex. required when building delta matrix
 
         self.count_id[ksimplex.k] += 1  # increasing id for the next k-simplex's id to be id+1
 
@@ -79,3 +77,6 @@ class SimplicialComplex:
             toreturn += str(k) + ': ' + str([str(x) for x in simplices]) + ' '
             toreturn += '\n'
         return toreturn
+
+    def __len__(self):
+        return len(self.simplex)

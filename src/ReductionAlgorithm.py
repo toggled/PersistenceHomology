@@ -7,7 +7,9 @@ from os import sys
 import copy
 from sympy import Symbol
 
-
+"""
+NingNing's version of the Algorithm (
+"""
 class vector_of_polynomials:
     def __init__(self, dim, exps, coeffs):
         """
@@ -59,6 +61,9 @@ class StandardMatrix:
         self.range_dk = []  # Ck-1
         self.rangesim_rowidx = {}
         self.std_matrix_transpose = []
+        reducedflag = False
+        self.interval = {}
+
         rowid = 0
         for i in range(len(filtration.listof_iFiltration)):
             for ksimplex in filtration.get_ksimplices_from_ithFiltration(k, i):
@@ -97,13 +102,13 @@ class StandardMatrix:
         return (len(self.range_dk), len(self.domain_dk))
 
     def get_transpose(self):
-        print self.range_dk
         exps = [[0 for x in self.domain_dk] for y in self.range_dk]
         coefs = [[0 for x in self.domain_dk] for y in self.range_dk]
         for col in range(len(self.domain_dk)):
             for row in range(len(self.range_dk)):
                 exps[row][col] = self.std_matrix[col].exponents[row]
                 coefs[row][col] = self.std_matrix[col].coefficients[row]
+
         for row in range(len(self.range_dk)):
             self.std_matrix_transpose.append(vector_of_polynomials(len(self.range_dk), exps[row], coefs[row]))
         return self.std_matrix_transpose
@@ -140,10 +145,12 @@ class StandardMatrix:
             if i >= numRows or j >= numCols:
                 break
 
-            if not self.std_matrix[j].is_nonzero(i):
+            if not self.std_matrix[j].is_nonzero(i):  # Not Pivot Row = causes infinity
                 nonzeroCol = j
-                while nonzeroCol < numCols and not self.std_matrix[nonzeroCol].is_nonzero(i):
-                    nonzeroCol += 1
+                while nonzeroCol < numCols:
+                    if not self.std_matrix[nonzeroCol].is_nonzero(i):
+                        nonzeroCol += 1
+
 
                 if nonzeroCol == numCols:
                     i += 1
@@ -154,6 +161,22 @@ class StandardMatrix:
                 colSwap(delta_kplusone, j, nonzeroCol)
                 print 'operation: ', str(operation), '\n'
 
+
+            else:  # Pivot Row
+
+                pivotcolumn = j
+                pivotrow = i
+                '''
+                print pivotrow,pivotcolumn
+                print self.std_matrix[pivotcolumn]
+                print self.std_matrix[pivotcolumn].get_degree(pivotrow)
+                print self.domain_dk[pivotcolumn],'->',self.domain_dk[pivotcolumn].degree
+                print self.range_dk[pivotrow].degree
+                '''
+
+                self.interval[tuple(self.range_dk[pivotrow].kvertices)] = (
+                self.range_dk[pivotrow].degree, self.domain_dk[pivotcolumn].degree)
+
             for otherCol in range(j + 1, numCols):
                 if self.std_matrix[otherCol].is_nonzero(i):
                     scaleAmt = self.std_matrix[otherCol].get_degree(i) - self.std_matrix[j].get_degree(i)
@@ -161,7 +184,8 @@ class StandardMatrix:
                     colCombine(self.std_matrix, otherCol, j, scaleAmt)
 
                     # self.print_stdmatrix()
-            self.print_stdmatrix()
+            # self.print_stdmatrix()
+
             i += 1
             j += 1
         print 'exiting simultaneous reduce\n'
@@ -170,5 +194,7 @@ class StandardMatrix:
             if not self.std_matrix[col].is_zeropoly():
                 del delta_kplusone[0]
             else:
-                break
+                self.domain_dk[tuple(self.domain_dk[col].kvertices)] = (self.domain_dk[col].degree, 'INFINITY')
+
+        reducedflag = True
         return self.std_matrix, delta_kplusone

@@ -28,6 +28,9 @@ class iFiltration:
                 return True
         return False
 
+    def __len__(self):
+        return len(self.simplicial_complex)
+
     def __str__(self):
         return str(self.simplicial_complex)
 
@@ -109,10 +112,12 @@ class Filtration:
                         if not added_already:
                             self.add_simplex_toith_filtration(filtr_idx - 1, ksimplex_obj)
 
+    def __str__(self):
+        repr = ''
+        for key, val in sorted(self.listof_iFiltration.items()):
+            repr += "Filtration " + str(key) + '\n' + str(val) + "\n"
 
-        def __str__(self):
-            repr = ''
-            for key, val in sorted(self.listof_iFiltration.items()):
-                repr += "Filtration " + str(key) + '\n' + str(val) + "\n"
+        return repr
 
-            return repr
+    def __len__(self):
+        return sum([len(a) for a in self.listof_iFiltration.values()])
