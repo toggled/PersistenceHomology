@@ -8,10 +8,11 @@ class KSimplex:
         self.name = str(self.k) + '-simplex: ' + str(listofvertices)
         self.id = -1  # This id is used as index while building transformation matrix
         self.degree = degree  # Degree of a KSimplex is like arrival time of that ksimplex in the simpcompne
+        # For Integer indexed filtration degree will be integer, real valued for real valued filtration
 
     def __str__(self):
         # return nice string representation of the k-simplex like 01, 12, 012, 1234 etc
-        return ''.join([str(i) for i in self.kvertices])
+        return ','.join([str(i) + ":" + str(self.degree) for i in self.kvertices])
 
     def __eq__(self, other):
         '''
@@ -25,6 +26,10 @@ class KSimplex:
 
     def isEmpty(self):
         return self.k < 0
+
+    def hasVertex(self, v):
+        assert isinstance(v, int)
+        return v in self.kvertices
 
 class SimplicialComplex:
     def __init__(self):
