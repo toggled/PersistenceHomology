@@ -57,6 +57,7 @@ def testMaxdist():
 
 def testWitnessStream():
     from WitnessFiltration import WitnessStream
+    from WeakWitnessFiltration import WeakWitnessStream
     # mean = [0, 0]
     # cov = [[1, 0], [0, 1]]
     # matrixofpoints_inR2 = np.random.multivariate_normal(mean, cov, 100)
@@ -65,15 +66,47 @@ def testWitnessStream():
     p = pc.MatlabPointCloud(filename, 'point_cloud')
     p.ComputeDistanceMatrix()
     # Create Selector
-    pointcloud_sel = sel.PointCloudSelector(p, 50, "RandomSelector")
+    pointcloud_sel = sel.PointCloudSelector(p, 100, "RandomSelector")
     R = float(pointcloud_sel.getdistance_subsetstoPointcloud()) / 2
     # R = 0
     print 'R = ', R
-    numdivision = 10
-    maxdim = 3
-    ws = WitnessStream(landmarkselector=pointcloud_sel, maxdistance=R, numdivision=numdivision, maxdimension=maxdim)
+    numdivision = 5
+    maxdim = 4
+    # ws = WitnessStream(landmarkselector=pointcloud_sel, maxdistance=R, numdivision=numdivision, maxdimension=maxdim)
+    ws = WeakWitnessStream(mu=2, landmarkselector=pointcloud_sel, maxdistance=R, numdivision=numdivision,
+                           maxdimension=maxdim)
     ws.construct()
     print ws
+
+
+def testWitnessStreamPH():
+    from WitnessFiltration import WitnessStream
+    from WeakWitnessFiltration import WeakWitnessStream
+    from src.ComputeInterval import IntervalComputation
+
+    # mean = [0, 0]
+    # cov = [[1, 0], [0, 1]]
+    # matrixofpoints_inR2 = np.random.multivariate_normal(mean, cov, 100)
+    # p = pc.PointCloud(matrixofpoints_inR2)
+    filename = '/Users/naheed/PycharmProjects/PersistenceHomology/data/eight.mat'
+    p = pc.MatlabPointCloud(filename, 'point_cloud')
+    p.ComputeDistanceMatrix()
+    # Create Selector
+    pointcloud_sel = sel.PointCloudSelector(p, 10, "RandomSelector")
+    R = float(pointcloud_sel.getdistance_subsetstoPointcloud()) / 2
+    # R = 0
+    print 'R = ', R
+    numdivision = 5
+    maxdim = 3
+    # ws = WitnessStream(landmarkselector=pointcloud_sel, maxdistance=R, numdivision=numdivision, maxdimension=maxdim)
+    ws = WeakWitnessStream(mu=2, landmarkselector=pointcloud_sel, maxdistance=R, numdivision=numdivision,
+                           maxdimension=maxdim)
+    ws.construct()
+    ci = IntervalComputation(ws)
+    ci.compute_intervals(
+        maxdim)  # I should check everything is ok in this function since the deg for simplices can have real value now.
+    ci.print_BettiNumbers()
+
 if __name__ == "__main__":
     # testpointcloud()
     # testMatlabPointcloud()
@@ -81,3 +114,4 @@ if __name__ == "__main__":
     # testRandomSelectorDistanceMetricio()
     # testMaxdist()
     testWitnessStream()
+    # testWitnessStreamPH()
