@@ -7,14 +7,16 @@ import DistanceMetricinput
 class PointCloudSelector:
     def __init__(self, pointcloud, subsetsize, algorithm):
         assert isinstance(pointcloud, pc.PointCloud)
+
         self.pointcloud = pointcloud
-        if not self.pointcloud.distmat:
-            self.pointcloud.ComputeDistanceMatrix()
+        self.pointcloud.ComputeDistanceMatrix()
 
         self.subsetsize = subsetsize
         assert isinstance(algorithm, str)
         self.algorithm = algorithm
         self.subsetindices = []  # Indices of the points chosen from 2D matrix. A subset of {0,1,...,n-1}
+        self.MaxMindist = None
+        self.subsetpointcloud = None
 
     def select(self):
         if self.algorithm == "MaxminSelector":
@@ -24,16 +26,15 @@ class PointCloudSelector:
 
     def runrandom(self):
 
-        subset = []
+        self.subsetindices = []
         if self.subsetsize > self.pointcloud.size:
             raise Exception("Subset size can not be more than the size of the Pointcloud")
         elif self.subsetsize == self.pointcloud.size:
-            subset = self.pointcloud
+            self.subsetindices = range(0, self.pointcloud.size, 1)
         else:
-            subset = self.pointcloud[np.random.choice(self.pointcloud.size, self.subsetsize, replace=False), :]
-            self.subsetindices = subset
+            self.subsetindices = np.random.choice(self.pointcloud.size, self.subsetsize, replace=False)
 
-        self.subsetpointcloud = pc.PointCloud(subset)
+        self.subsetpointcloud = pc.PointCloud(self.pointcloud.Points[self.subsetindices])
 
     def runmaxmin(self):
         pass
@@ -45,6 +46,19 @@ class PointCloudSelector:
         self.select()
         return self.subsetpointcloud
 
+    # BUGG
+    def getdistance_subsetstoPointcloud(self):
+        """
+        :rtype float (farthest distance of the closest points in Landmarkset from Pointcloud)
+        """
+        if not self.subsetpointcloud:
+            self.select()
+        dist_subsetstoPointcloud = self.pointcloud.distmat[self.subsetindices]
+        # Construct the closest points distance array for each x in Pointcloud
+        dist_closestpoints = np.amin(dist_subsetstoPointcloud, axis=0)
+        # compute max
+        self.MaxMindist = np.max(dist_closestpoints)
+        return self.MaxMindist
 
 class MetricSelector:
     def __init__(self, distancematrixobj, subsetsize, algorithm):
@@ -57,7 +71,8 @@ class MetricSelector:
         assert isinstance(algorithm, str)
         self.algorithm = algorithm
         self.subsetindices = []  # Indices of the points chosen from 2D matrix. A subset of {0,1,...,n-1}
-        self.subsets_distancemat = []  # distance matrix of the subset pointcloud
+        self.dist_subsetstoPointcloud = []  # distance matrix for each point in the subset to the wholeset
+        self.MaxMindist = None
 
     def select(self):
         if self.algorithm == "MaxminSelector":
@@ -66,7 +81,7 @@ class MetricSelector:
             self.runrandom()
 
     def runrandom(self):
-        print type(self.distancematrix)
+        # print type(self.distancematrix)
         selectedpoints_indices = None
         if self.subsetsize > self.totalsize:
             raise Exception("Subset size can not be more than the size of the Pointcloud")
@@ -76,7 +91,7 @@ class MetricSelector:
             selectedpoints_indices = np.random.choice(range(0, self.totalsize, 1), self.subsetsize, replace=False)
 
         self.subsetindices = selectedpoints_indices
-        self.subsets_distancemat = self.distancematrix[selectedpoints_indices][:, selectedpoints_indices]
+        self.dist_subsetstoPointcloud = self.distancematrix[selectedpoints_indices]
 
     def runmaxmin(self):
         pass
@@ -86,4 +101,16 @@ class MetricSelector:
         :rtype 2Dimenstional ndarray
         """
         self.select()
-        return self.subsets_distancemat
+        return self.dist_subsetstoPointcloud
+
+    def getdistance_subsetstoPointcloud(self):
+        """
+        :rtype float (farthest distance of the closest points in Landmarkset from Pointcloud)
+        """
+        if not self.dist_subsetstoPointcloud:
+            self.select()
+        # Construct the closest points distance array for each x in Pointcloud
+        dist_closestpoints = np.amin(self.dist_subsetstoPointcloud, axis=0)
+        # compute max
+        self.MaxMindist = np.max(dist_closestpoints)
+        return self.MaxMindist
