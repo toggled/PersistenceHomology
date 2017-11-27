@@ -28,7 +28,7 @@ class WitnessStream(RealvaluedFiltration):
         # Compute the distance matrix of dimension |landmarkset|x|pointcloud|
         if landmarkselector.pointcloud.distmat is None:
             landmarkselector.pointcloud.ComputeDistanceMatrix()
-        print 'len: ', landmarkselector.pointcloud.distmat.shape
+        # print 'len: ', landmarkselector.pointcloud.distmat.shape
         self.dist_landmarkstoPointcloud = np.copy(
             landmarkselector.pointcloud.distmat[landmarkselector.subsetindices])  # ndarray
         self.pointcloud.distmat = []
@@ -105,14 +105,14 @@ class WitnessStream(RealvaluedFiltration):
                                 continue
                             potential_simplex_indices = new_simplex_vertices + [
                                 newpt]  # this won't change simplex.kvertices list
-                            # Check whether the faces of potential_simplex_indices are present or not up until now
+                            # Check whether all the faces of potential_simplex_indices are present or not up until now
                             for face in getFacesContainingV(new_simplex_vertices, newpt):
                                 if self.simplex_to_filtrationmap.get(face, None) is None:
                                     a_face_is_missing = True
                                 if a_face_is_missing:
                                     break
                             if a_face_is_missing:
-                                break  # A face is missing from the filtration for the simplex containing this newpt.
+                                continue  # A face is missing from the filtration for the simplex. Consider some other point.
 
                             potential_simplex = self.pointcloud.Points[potential_simplex_indices]
                             new_simplex = None
