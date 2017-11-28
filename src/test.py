@@ -67,17 +67,17 @@ def testWitnessStream():
     p.ComputeDistanceMatrix()
     # Create Selector
     pointcloud_sel = sel.PointCloudSelector(p, 100, "RandomSelector")
-    R = float(pointcloud_sel.getdistance_subsetstoPointcloud()) / 2
+    R = float(pointcloud_sel.get_maxdistance_landmarktoPointcloud()) / 2
     # R = 0
     print 'R = ', R
     numdivision = 5
-    maxdim = 4
+    maxdim = 3
     # ws = WitnessStream(landmarkselector=pointcloud_sel, maxdistance=R, numdivision=numdivision, maxdimension=maxdim)
     ws = WeakWitnessStream(mu=2, landmarkselector=pointcloud_sel, maxdistance=R, numdivision=numdivision,
                            maxdimension=maxdim)
     ws.construct()
     print ws
-
+    print "Total number of Simplices in the Filtration: ", len(ws)
 
 def testWitnessStreamPH():
     from WitnessFiltration import WitnessStream
@@ -92,8 +92,9 @@ def testWitnessStreamPH():
     p = pc.MatlabPointCloud(filename, 'point_cloud')
     p.ComputeDistanceMatrix()
     # Create Selector
-    pointcloud_sel = sel.PointCloudSelector(p, 10, "RandomSelector")
-    R = float(pointcloud_sel.getdistance_subsetstoPointcloud()) / 2
+    # pointcloud_sel = sel.PointCloudSelector(p, 10, "RandomSelector")
+    pointcloud_sel = sel.PointCloudSelector(p, 500, "MaxminSelector")
+    R = float(pointcloud_sel.get_maxdistance_landmarktoPointcloud())
     # R = 0
     print 'R = ', R
     numdivision = 5
@@ -102,6 +103,7 @@ def testWitnessStreamPH():
     ws = WeakWitnessStream(mu=2, landmarkselector=pointcloud_sel, maxdistance=R, numdivision=numdivision,
                            maxdimension=maxdim)
     ws.construct()
+    print "Total number of Simplices in the Filtration: ", len(ws)
     ci = IntervalComputation(ws)
     ci.compute_intervals(
         maxdim)  # I should check everything is ok in this function since the deg for simplices can have real value now.
@@ -113,5 +115,5 @@ if __name__ == "__main__":
     # testRandomSelector()
     # testRandomSelectorDistanceMetricio()
     # testMaxdist()
-    testWitnessStream()
-    # testWitnessStreamPH()
+    # testWitnessStream()
+    testWitnessStreamPH()
