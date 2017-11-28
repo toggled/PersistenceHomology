@@ -12,6 +12,7 @@ from itertools import combinations
 class WitnessStream(RealvaluedFiltration):
     def __init__(self, landmarkselector, maxdistance, numdivision, maxdimension):
         """
+        This class is only for PointCloud in Euclidean space currently. Not for arbitrary Metric.
         :param landmarkselector = Selector.PointCloudSelector object
         """
         super(WitnessStream, self).__init__(np.linspace(0, maxdistance, numdivision + 1))
@@ -158,6 +159,7 @@ class WitnessStream(RealvaluedFiltration):
 class MetricWitnessStream:
     def __init__(self, metriclandmarkselector, maxdistance, numdivision, maxdimension):
         """
+        Strong Witness Complex Class for Arbitrary metric space.
         :param landmarkselector = Selector.MetricSelector object
         """
         assert isinstance(metriclandmarkselector, sel.MetricSelector)
