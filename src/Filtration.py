@@ -240,4 +240,7 @@ class RealvaluedFiltration(object):
         return repr
 
     def __len__(self):
+        """
+        Returns the total number of simplices in the filtration
+        """
         return sum([len(a) for a in self.listof_iFiltration.values()])
