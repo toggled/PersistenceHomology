@@ -1,5 +1,4 @@
 import PointCloud as pc
-import string
 import numpy as np
 import DistanceMetricinput
 
@@ -43,14 +42,14 @@ class PointCloudSelector:
         import random
         mindist_ptolandmarkset = np.full(self.pointcloud.size, np.inf)
         self.subsetindices = []
-        for i in range(self.subsetsize + 1):
+        for i in xrange(self.subsetsize + 1):
 
             if i == 0:
                 selected_index = random.randint(0, self.pointcloud.size - 1)
                 self.subsetindices.append(selected_index)
                 # update min for all the rest indices
                 # update min for this index to 0.
-                for z in range(self.pointcloud.size):
+                for z in xrange(self.pointcloud.size):
                     # if z == selected_index:
                     #     mindist_ptolandmarkset[z] = 0.0
                     # else:
@@ -58,7 +57,7 @@ class PointCloudSelector:
             else:
                 selected_index = np.argmax(mindist_ptolandmarkset)
                 # update minimum distance for all points
-                for z in range(self.pointcloud.size):
+                for z in xrange(self.pointcloud.size):
                     mindist_ptolandmarkset[z] = min(mindist_ptolandmarkset[z],
                                                     self.pointcloud.distmat[selected_index][z])
 
@@ -71,7 +70,8 @@ class PointCloudSelector:
         """
         :rtype a PointCloud object
         """
-        self.select()
+        if self.subsetpointcloud is None:
+            self.select()
         return self.subsetpointcloud
 
     def get_maxdistance_landmarktoPointcloud(self):
@@ -128,14 +128,14 @@ class MetricSelector:
         import random
         mindist_ptolandmarkset = np.full(self.totalsize, np.inf)
         self.subsetindices = []
-        for i in range(self.subsetsize + 1):
+        for i in xrange(self.subsetsize + 1):
 
             if i == 0:
                 selected_index = random.randint(0, self.pointcloud.size - 1)
                 self.subsetindices.append(selected_index)
                 # update min for all the rest indices
                 # update min for this index to 0.
-                for z in range(self.pointcloud.size):
+                for z in xrange(self.pointcloud.size):
                     # if z == selected_index:
                     #     mindist_ptolandmarkset[z] = 0.0
                     # else:
@@ -143,7 +143,7 @@ class MetricSelector:
             else:
                 selected_index = np.argmax(mindist_ptolandmarkset)
                 # update minimum distance for all points
-                for z in range(self.pointcloud.size):
+                for z in xrange(self.pointcloud.size):
                     mindist_ptolandmarkset[z] = min(mindist_ptolandmarkset[z],
                                                     self.pointcloud.distmat[selected_index][z])
 

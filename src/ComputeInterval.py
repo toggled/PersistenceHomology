@@ -8,8 +8,9 @@ INF = float('inf')
 
 class IntervalComputation:
     def __init__(self, filtr):
-        self.filtration_ar = []
-        self.simplex_to_indexmap = {}
+        self.filtration_ar = []  # Holds the ordered list of simplices accros the filtration. simplices of dimension k appears before k+1.
+        # # if dimensions are the same, ordered by their appearence time.
+        self.simplex_to_indexmap = {}  # for simplex sigma it holds its index in filtration_ar[]
         self.betti_intervals = None
         self.representative_cycles = []
 
@@ -20,8 +21,8 @@ class IntervalComputation:
 
         self.maxdim = maxk
         cnt = 0
-        for k in range(maxk + 1):
-            for i in range(len(filtr.listof_iFiltration)):
+        for k in xrange(maxk + 1):
+            for i in xrange(len(filtr.listof_iFiltration)):
                 for ksimplex in filtr.get_ksimplices_from_ithFiltration(k, i):
                     if ksimplex:
                         self.simplex_to_indexmap[tuple(ksimplex.kvertices)] = cnt
@@ -31,7 +32,7 @@ class IntervalComputation:
         # print [str(x) for x in self.filtration_ar]
 
         self.T = [None] * len(self.filtration_ar)
-        self.marked = [False] * len(self.filtration_ar)
+        self.marked = [False] * len(self.filtration_ar)  # Boolean flag for marked simplices.
         self.j_ar = [None] * len(self.filtration_ar)
 
         #print self.simplex_to_indexmap
@@ -42,11 +43,11 @@ class IntervalComputation:
         :return: Betti_0,Betti_1,...,upto Betti_K intervals
         """
         if K:
-            self.betti_intervals = [[] for i in range(K + 1)]
-            self.representative_cycles = [[] for i in range(K + 1)]
+            self.betti_intervals = [[] for i in xrange(K + 1)]
+            self.representative_cycles = [[] for i in xrange(K + 1)]
         else:
-            self.betti_intervals = [[] for i in range(self.maxdim + 1)]
-            self.representative_cycles = [[] for i in range(self.maxdim + 1)]
+            self.betti_intervals = [[] for i in xrange(self.maxdim + 1)]
+            self.representative_cycles = [[] for i in xrange(self.maxdim + 1)]
 
         for j, sigmaj in enumerate(self.filtration_ar):
             if K:

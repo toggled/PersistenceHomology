@@ -43,7 +43,7 @@ class WeakWitnessStream(WitnessStream):
             """
             # Find the edges which satisfy the conditions
             for i, index_a in enumerate(self.landmarkindices):
-                for index_b in range(i + 1, self.landmarkset.size):
+                for index_b in xrange(i + 1, self.landmarkset.size):
                     # Check whether (index_a,index_b) can be a simplex
                     tmin = np.inf
                     potential_simplex_indices = [index_a, self.landmarkindices[index_b]]
@@ -79,7 +79,7 @@ class WeakWitnessStream(WitnessStream):
                 for subset in combinations(sigma, cardinality):
                     yield subset
 
-            for cardinality_cofaces in range(3, maxcardinality_simplex + 1):
+            for cardinality_cofaces in xrange(3, maxcardinality_simplex + 1):
                 for newsigma in getsubfaces(self.landmarkindices, cardinality_cofaces):
                     tmax = -1
                     edge_missing = False

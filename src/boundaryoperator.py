@@ -18,7 +18,7 @@ class Boundary:
         mid = 0
         if end == 1:
             return []
-        for mid in range(start, end):
+        for mid in xrange(start, end):
             self.boundary.append(((1) ** mid, KSimplex(indexlist[start:mid] + indexlist[mid + 1:end])))
         return self.boundary
 

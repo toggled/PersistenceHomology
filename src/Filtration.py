@@ -105,7 +105,7 @@ class Filtration:
 
     def add_simplices_from_cliquefiles(self, dir):
         base = 'clique_'
-        from os import path, listdir
+        from os import listdir
         for fil in listdir(dir):
             if fil.startswith(base):
                 filtr_idx = int(fil.split("_")[1][0])
@@ -118,7 +118,7 @@ class Filtration:
                             break
                         ksimplex_obj = KSimplex(sorted(int(v) for v in simplex.split()))
                         added_already = False
-                        for i in range(filtr_idx - 1):
+                        for i in xrange(filtr_idx - 1):
                             if self.has_ksimplex_in_ithfiltration(ksimplex_obj, i):
                                 added_already = True
 
@@ -225,7 +225,7 @@ class RealvaluedFiltration(object):
     #                         break
     #                     ksimplex_obj = KSimplex(sorted(int(v) for v in simplex.split()))
     #                     added_already = False
-    #                     for i in range(filtr_idx - 1):
+    #                     for i in xrange(filtr_idx - 1):
     #                         if self.has_ksimplex_in_ithfiltration(ksimplex_obj, i):
     #                             added_already = True
     #

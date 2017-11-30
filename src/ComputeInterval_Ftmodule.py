@@ -16,7 +16,7 @@ class PintervaloverField:
 
     def ComputeIntervals(self, fil):
 
-        for dim in range(1, self.maxdim + 2, 2):
+        for dim in xrange(1, self.maxdim + 2, 2):
 
             Mk = StandardMatrix(fil, dim)
             Mk_plusone = StandardMatrix(fil, dim + 1)

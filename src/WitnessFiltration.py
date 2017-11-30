@@ -32,7 +32,7 @@ class WitnessStream(RealvaluedFiltration):
         # print 'len: ', landmarkselector.pointcloud.distmat.shape
         self.dist_landmarkstoPointcloud = np.copy(
             landmarkselector.pointcloud.distmat[landmarkselector.subsetindices])  # ndarray
-        self.pointcloud.distmat = []
+
 
     def construct(self):
         """
@@ -57,7 +57,7 @@ class WitnessStream(RealvaluedFiltration):
             """
             # Find the edges which satisfy the conditions
             for i, index_a in enumerate(self.landmarkindices):
-                for index_b in range(i + 1, self.landmarkset.size):
+                for index_b in xrange(i + 1, self.landmarkset.size):
                     # Check whether (index_a,index_b) can be a simplex
                     tmin = np.inf
                     potential_simplex_indices = [index_a, self.landmarkindices[index_b]]
@@ -89,11 +89,11 @@ class WitnessStream(RealvaluedFiltration):
                 for subset in combinations(L, sz):
                     yield subset + (v,)
 
-            for cardinality_cofaces in range(3, maxcardinality_simplex + 1):
+            for cardinality_cofaces in xrange(3, maxcardinality_simplex + 1):
                 # Process dimension>1 simplices from lower Filtration. since, the right hand side (a min-max term) of the condition is monotonically
                 # increasing. Which means, if a simplex sigma appears in filtration value k, its cofaces will have value >=k
                 # Only consider |cardinality_cofaces|-1 dimensional simplices in the filtration when we generate its coface
-                for i in range(self.numdiv + 1):
+                for i in xrange(self.numdiv + 1):
                     # max_filtration_val = t[i]
                     for simplex in self.get_ksimplices_from_ithFiltration(cardinality_cofaces - 2, i):
                         # Compute all cofaces and check the condition
