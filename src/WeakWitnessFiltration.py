@@ -1,16 +1,20 @@
+"""
+This module contains class to create Lazy/Week Witness Filtration with specified parameter.
+"""
 __author__ = 'Naheed'
 
-import PointCloud as pc
-import Selector as sel
-import numpy as np
-from WitnessFiltration import WitnessStream
-from Filtration import RealvaluedFiltration
-from src.simplex import KSimplex
 import math
 from itertools import combinations
+import numpy as np
+from src.WitnessFiltration import WitnessStream
+from src.simplex import KSimplex
 
 
 class WeakWitnessStream(WitnessStream):
+    """
+    Given a selector and other required parameters for Filtration, this class offers the
+    functionality of a Weak/Lazy witness filtration.
+    """
     def __init__(self, mu, landmarkselector, maxdistance, numdivision, maxdimension):
         """
         Weakwitness stream has a mu parameter. mu= number of nearest neighbor to consider.
@@ -37,20 +41,18 @@ class WeakWitnessStream(WitnessStream):
 
         # edge_appear_matrix = np.full((self.landmarkset.size,self.landmarkset.size),np.inf)
         if maxcardinality_simplex > 1:
-            # Add edges
-            """
-            Add an edge [ab] if there exists a p in pointcloud such that max(d(a,p),d(b,p))< filtration_value + d(p,2nd nearest neighbor of p)
-            """
+            # Add an edge [ab] if there exists
+            #   a p in pointcloud such that max(d(a,p),d(b,p))< filtration_value + d(p,2nd nearest neighbor of p)
             # Find the edges which satisfy the conditions
             for i, index_a in enumerate(self.landmarkindices):
                 for index_b in xrange(i + 1, self.landmarkset.size):
-                    # Check whether (index_a,index_b) can be a simplex
+                    # Checking whether (index_a,index_b) can be a simplex
                     tmin = np.inf
                     potential_simplex_indices = [index_a, self.landmarkindices[index_b]]
-                    potential_simplex = [self.landmarkset.Points[i], self.landmarkset.Points[index_b]]
+                    potential_simplex = [self.landmarkset.points[i], self.landmarkset.points[index_b]]
                     # print 'testing: ',potential_simplex
                     new_simplex = None
-                    for index_z, z in enumerate(self.pointcloud.Points):
+                    for index_z, z in enumerate(self.pointcloud.points):
                         check_value = self.getMaxDistance(z, potential_simplex) - distances[index_z]
 
                         if tmin > check_value and check_value <= self.maxdist:
@@ -63,19 +65,16 @@ class WeakWitnessStream(WitnessStream):
                             tmin / self.diff_filtrationval)  # compute filtration index from filtration value.
                         self.add_simplex_toith_filtration(i=filtration_indx, filtration_val=filtration_val,
                                                           simplex=new_simplex)
-                        # edge_appear_matrix[potential_simplex_indices[0]][potential_simplex_indices[1]] = filtration_val
-                        # edge_appear_matrix[potential_simplex_indices[1]][potential_simplex_indices[0]] = filtration_val
-                        # else:
-                        #     edge_appear_matrix[potential_simplex_indices[0]][potential_simplex_indices[1]] = np.inf
-                        #     edge_appear_matrix[potential_simplex_indices[1]][potential_simplex_indices[0]] = np.inf
-
         if maxcardinality_simplex > 2:
-            """
-            Add simplices of higher order
-            """
-
+            # Adding simplices of higher order
             def getsubfaces(sigma, cardinality):
-                # Return cardinality sized subset of sigma
+                """
+                Yields cardinality sized subsets of simplex sigma
+                :param sigma: a list (a simplex)
+                :param cardinality: an integer less than |sigma| i.e cardinality of some subset of sigma
+                :return: list
+                """
+                assert cardinality < sigma
                 for subset in combinations(sigma, cardinality):
                     yield subset
 
@@ -111,10 +110,11 @@ class WeakWitnessStream(WitnessStream):
 
     def getKthNearestNeighbour(self, k):
         """
+        :param k : a positive integer (which nearest neighbor we want)
         :return the list of distances to the k-th nearest neighbor for the points in the pointcloud
         """
         k_nearest_distances = []
-        for witness_idx, witness_pt in enumerate(self.pointcloud.Points):
+        for witness_idx in xrange(len(self.pointcloud.points)):
             alldistances = np.copy(self.dist_landmarkstoPointcloud[:, witness_idx])
             alldistances.sort(kind='quicksort')
             k_nearest_distances.append(alldistances[k])
