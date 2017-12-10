@@ -14,9 +14,7 @@ class iFiltration:
 
     def add_simplex_to_filtration(self, simplex):
         '''
-
-        :param filtration_index: The index of the filtration
-        :param simplex: An instance of KSimplex
+        :param s`implex: An instance of KSimplex
         :return:
         '''
         self.simplicial_complex.add_simplex(simplex)
@@ -39,13 +37,16 @@ class iFiltration:
         # return str(self.simplicial_complex)+"\n"+"Size: "+str(len(self.simplicial_complex))
         return str(self.simplicial_complex)
 
+
 class Filtration:
     """
     This is an integer indexed filtration
     """
+
     def __init__(self):
         self.listof_iFiltration = {}
-        self.simplex_to_filtrationmap = {}  # This map is needed in the dk matrix formation coz we need degree
+        # This map is needed in the dk matrix formation coz we need degree
+        self.simplex_to_filtrationmap = {}
         self.maxdeg = 0
 
     def add_filtration(self, i):
@@ -69,7 +70,6 @@ class Filtration:
     def has_ksimplex_in_ithfiltration(self, KSim, i):
         assert isinstance(KSim, KSimplex)
         return self.get_ithfiltration(i).has_simplex(KSim)
-
 
     def add_simplex_toith_filtration(self, i, simplex):
         '''
@@ -99,9 +99,13 @@ class Filtration:
                 if not line:
                     break
                 simplex, filtr_idx = line.split(',')
+                # Building the K-simplex object .
+                # I better insert them in sorted order to avoid orientation conflict
+                # between higher dimensional simplices.
                 ksimplex_obj = KSimplex(sorted([int(v) for v in
-                                                simplex.split()]))  # Building the K-simplex object . Always insert them in sorted order to avoid orientation conflict between higher dimensional simplices.
+                                                simplex.split()]))
                 self.add_simplex_toith_filtration(int(filtr_idx), ksimplex_obj)
+                self.maxdeg = max(self.maxdeg, int(filtr_idx))
 
     def add_simplices_from_cliquefiles(self, dir):
         base = 'clique_'
@@ -143,7 +147,8 @@ class RealvaluedFiltration(object):
 
     def __init__(self, filtration_values):
         self.listof_iFiltration = {}
-        self.simplex_to_filtrationmap = {}  # This map is needed in the dk matrix formation coz we need degree
+        # This map is needed in the dk matrix formation coz we need degree
+        self.simplex_to_filtrationmap = {}
         self.maxdeg = 0
         self.filtration_values = filtration_values
         self.maxfiltration_val = filtration_values[-1]  # largest filtration value
@@ -159,7 +164,10 @@ class RealvaluedFiltration(object):
         self.listof_iFiltration[i].set_value(val)
 
     def get_ithfiltration(self, i):
-        return self.listof_iFiltration.get(i, None)
+        ithFilt = self.listof_iFiltration.get(i, None)
+        if ithFilt is None:
+            return []
+        return ithFilt
 
     def get_ksimplices_from_ithFiltration(self, k, i):
         '''
@@ -168,7 +176,7 @@ class RealvaluedFiltration(object):
         :return: List of Simplex objects from the simplicial complex at i-th filtration
         '''
         ith_Filtration = self.get_ithfiltration(i)
-        if ith_Filtration is None:
+        if not ith_Filtration:
             return []
         return ith_Filtration.get_all_ksimplices(k)
 
@@ -178,7 +186,9 @@ class RealvaluedFiltration(object):
 
     def add_simplex_toith_filtration(self, i, filtration_val, simplex):
         '''
-        This function does not make sure whether sub-faces are present in the filtration or not. It is the responsibility of the caller function to ensure that.
+        This function does not make sure whether sub-faces are present in the filtration or not.
+        It is the responsibility of the caller function to ensure that.
+        :rtype: object
         :param i: i'th Filtration
         :param filtration_val: value of the i'th filtration
         :param simplex: Simplex to add to i'th Filtration may be a list or a KSimplex instance
@@ -195,7 +205,7 @@ class RealvaluedFiltration(object):
             self.listof_iFiltration[i].add_simplex_to_filtration(simplex)
             self.simplex_to_filtrationmap[tuple(simplex.kvertices)] = i
         else:
-            ksimplex = KSimplex(simplex, i)
+            ksimplex = KSimplex(simplex, filtration_val)
             self.listof_iFiltration[i].add_simplex_to_filtration(ksimplex)
             self.simplex_to_filtrationmap[tuple(ksimplex.kvertices)] = i
 
@@ -206,8 +216,11 @@ class RealvaluedFiltration(object):
     #             if not line:
     #                 break
     #             simplex, filtr_idx = line.split(',')
+    # Building the K-simplex object .
+    # Always insert them in sorted order to avoid orientation conflict
+    # between higher dimensional simplices.
     #             ksimplex_obj = KSimplex(sorted([int(v) for v in
-    #                                             simplex.split()]))  # Building the K-simplex object . Always insert them in sorted order to avoid orientation conflict between higher dimensional simplices.
+    #                                             simplex.split()]))
     #             self.add_simplex_toith_filtration(int(filtr_idx), ksimplex_obj)
 
     # def add_simplices_from_cliquefiles(self, dir):
