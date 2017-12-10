@@ -1,12 +1,12 @@
 __author__ = 'Naheed'
 
-import PointCloud as pc
-import Selector as sel
-import numpy as np
-from Filtration import RealvaluedFiltration
-from src.simplex import KSimplex
-import math
 from itertools import combinations
+import math
+from src.PointCloud import PointCloud
+from src.Selector import PointCloudSelector
+from src.Filtration import RealvaluedFiltration
+from src.simplex import KSimplex
+import numpy as np
 
 
 class WitnessStream(RealvaluedFiltration):
@@ -16,19 +16,19 @@ class WitnessStream(RealvaluedFiltration):
         :param landmarkselector = Selector.PointCloudSelector object
         """
         super(WitnessStream, self).__init__(np.linspace(0, maxdistance, numdivision + 1))
-        assert isinstance(landmarkselector, sel.PointCloudSelector)
+        # assert isinstance(landmarkselector,PointCloudSelector)
         self.pointcloud = landmarkselector.pointcloud  # PointCloud object
         if not landmarkselector.subsetpointcloud:
             landmarkselector.select()
         self.landmarkset = landmarkselector.subsetpointcloud  # PointCloud object
         self.landmarkindices = landmarkselector.subsetindices
-        assert isinstance(self.landmarkset, pc.PointCloud)
+        #assert isinstance(self.landmarkset, PointCloud)
         self.maxdist = maxdistance
         self.numdiv = numdivision
         self.maxdim = maxdimension
         # Compute the distance matrix of dimension |landmarkset|x|pointcloud|
         if landmarkselector.pointcloud.distmat is None:
-            landmarkselector.pointcloud.ComputeDistanceMatrix()
+            landmarkselector.pointcloud.compute_distancematrix()
         # print 'len: ', landmarkselector.pointcloud.distmat.shape
         self.dist_landmarkstoPointcloud = np.copy(
             landmarkselector.pointcloud.distmat[landmarkselector.subsetindices])  # ndarray
@@ -38,33 +38,30 @@ class WitnessStream(RealvaluedFiltration):
         """
         Constructs the Witness Filtration/Stream.
         """
-
         maxcardinality_simplex = [self.maxdim + 1, self.landmarkset.size][
             self.maxdim < 0 | self.maxdim >= self.landmarkset.size]  # maximum cardinality of a KSimplex object
-        print maxcardinality_simplex
+        # print maxcardinality_simplex
         # Construct a KDtree for nearest neighbor query
         distances = self.getNearestNeighbours(maxcardinality_simplex)
-        print 'shape: ', distances.shape
+        # print 'shape: ', distances.shape
         if maxcardinality_simplex > 0:
             # First, Add all the landmark points as 0-simplex to 0-filtration
             for landmarkpoint in self.landmarkindices:
                 self.add_simplex_toith_filtration(0, 0.0, KSimplex(listofvertices=[landmarkpoint]))
 
         if maxcardinality_simplex > 1:
-            # Add edges
-            """
-            Add an edge [ab] if there exists a p in pointcloud such that max(d(a,p),d(b,p))< filtration_value + d(p,2nd nearest neighbor of p)
-            """
+            # Add an edge [ab] if there exists a p in pointcloud such that
+            # max(d(a,p),d(b,p))< filtration_value + d(p,2nd nearest neighbor of p)
             # Find the edges which satisfy the conditions
             for i, index_a in enumerate(self.landmarkindices):
                 for index_b in xrange(i + 1, self.landmarkset.size):
                     # Check whether (index_a,index_b) can be a simplex
                     tmin = np.inf
                     potential_simplex_indices = [index_a, self.landmarkindices[index_b]]
-                    potential_simplex = [self.landmarkset.Points[i], self.landmarkset.Points[index_b]]
+                    potential_simplex = [self.landmarkset.points[i], self.landmarkset.points[index_b]]
                     # print 'testing: ',potential_simplex
                     new_simplex = None
-                    for index_z, z in enumerate(self.pointcloud.Points):
+                    for index_z, z in enumerate(self.pointcloud.points):
                         check_value = self.getMaxDistance(z, potential_simplex) - distances[index_z][1]
                         if tmin > check_value and check_value <= self.maxdist:
                             new_simplex = KSimplex(potential_simplex_indices, degree=check_value)
@@ -78,11 +75,9 @@ class WitnessStream(RealvaluedFiltration):
                                                           simplex=new_simplex)
 
         if maxcardinality_simplex > 2:
-            """
-            Add simplices of higher order
-            """
-
-            # I need a generator function. Given a list L of length l, and a vertex v, for each L choose (l-1) subsets of length l-1, it will
+            # Add simplices of higher order
+            # I need a generator function. Given a list L of length l, and a vertex v,
+            # for each L choose (l-1) subsets of length l-1, it will
             # append v to it and return that as a tuple
             def getFacesContainingV(L, v):
                 sz = len(L) - 1
@@ -90,9 +85,11 @@ class WitnessStream(RealvaluedFiltration):
                     yield subset + (v,)
 
             for cardinality_cofaces in xrange(3, maxcardinality_simplex + 1):
-                # Process dimension>1 simplices from lower Filtration. since, the right hand side (a min-max term) of the condition is monotonically
-                # increasing. Which means, if a simplex sigma appears in filtration value k, its cofaces will have value >=k
-                # Only consider |cardinality_cofaces|-1 dimensional simplices in the filtration when we generate its coface
+                # Process dimension>1 simplices from lower Filtration. since, the right hand side (a min-max term)
+                # of the condition is monotonically increasing.
+                # This means, if a simplex sigma appears in filtration value k, its cofaces will have value >=k
+                # Only consider |cardinality_cofaces|-1 dimensional simplices in the filtration
+                # when we generate its coface
                 for i in xrange(self.numdiv + 1):
                     # max_filtration_val = t[i]
                     for simplex in self.get_ksimplices_from_ithFiltration(cardinality_cofaces - 2, i):
@@ -113,13 +110,13 @@ class WitnessStream(RealvaluedFiltration):
                                 if a_face_is_missing:
                                     break
                             if a_face_is_missing:
-                                continue  # A face is missing from the filtration for the simplex. Consider some other point.
+                                continue  # A face is missing from the filtration for the simplex.
 
-                            potential_simplex = self.pointcloud.Points[potential_simplex_indices]
+                            potential_simplex = self.pointcloud.points[potential_simplex_indices]
                             new_simplex = None
                             tmin = np.inf
 
-                            for index_z, z in enumerate(self.pointcloud.Points):  # Try to find witness
+                            for index_z, z in enumerate(self.pointcloud.points):  # Try to find witness
                                 check_value = self.getMaxDistance(z, potential_simplex) - distances[index_z][
                                     cardinality_cofaces - 1]
                                 if tmin > check_value and check_value <= self.maxdist:
@@ -134,11 +131,8 @@ class WitnessStream(RealvaluedFiltration):
                                                                   simplex=new_simplex)
 
     def getNearestNeighbours(self, k):
-        # nbrs = KDTree(self.pointcloud.Points, leaf_size=self.maxdim + 2, metric='euclidean')
-        # nbrs_obj  = NearestNeighbors(n_neighbors=k, algorithm='ball_tree',metric='euclidean').fit(self.pointcloud.Points)
-        # return nbrs_obj.kneighbors(self.pointcloud.Points)
         k_nearest_distances = []
-        for witness_idx, witness_pt in enumerate(self.pointcloud.Points):
+        for witness_idx in xrange(len(self.pointcloud.points)):
             alldistances = np.copy(self.dist_landmarkstoPointcloud[:, witness_idx])
             alldistances.sort(kind='quicksort')
             k_nearest_distances.append(alldistances[0:k + 1])
@@ -162,7 +156,7 @@ class MetricWitnessStream:
         Strong Witness Complex Class for Arbitrary metric space.
         :param landmarkselector = Selector.MetricSelector object
         """
-        assert isinstance(metriclandmarkselector, sel.MetricSelector)
+        assert isinstance(metriclandmarkselector, Selector.MetricSelector)
         self.maxdist = maxdistance
         self.numdiv = numdivision
         self.maxdim = maxdimension
