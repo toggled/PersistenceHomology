@@ -8,7 +8,7 @@ class PointCloudSelector:
         assert isinstance(pointcloud, pc.PointCloud)
 
         self.pointcloud = pointcloud
-        self.pointcloud.ComputeDistanceMatrix()
+        self.pointcloud.compute_distancematrix()
 
         self.subsetsize = subsetsize
         assert isinstance(algorithm, str)
@@ -33,7 +33,7 @@ class PointCloudSelector:
         else:
             self.subsetindices = np.random.choice(self.pointcloud.size, self.subsetsize, replace=False)
 
-        self.subsetpointcloud = pc.PointCloud(self.pointcloud.Points[self.subsetindices])
+        self.subsetpointcloud = pc.PointCloud(self.pointcloud.points[self.subsetindices])
 
     def runmaxmin(self):
         """
@@ -42,11 +42,9 @@ class PointCloudSelector:
         import random
         mindist_ptolandmarkset = np.full(self.pointcloud.size, np.inf)
         self.subsetindices = []
-        for i in xrange(self.subsetsize + 1):
-
+        for i in xrange(self.subsetsize):
             if i == 0:
                 selected_index = random.randint(0, self.pointcloud.size - 1)
-                self.subsetindices.append(selected_index)
                 # update min for all the rest indices
                 # update min for this index to 0.
                 for z in xrange(self.pointcloud.size):
@@ -63,7 +61,7 @@ class PointCloudSelector:
 
             self.subsetindices.append(selected_index)
 
-        self.subsetpointcloud = pc.PointCloud(self.pointcloud.Points[self.subsetindices])
+        self.subsetpointcloud = pc.PointCloud(self.pointcloud.points[self.subsetindices])
 
 
     def getLandmarkPoints(self):
@@ -149,7 +147,7 @@ class MetricSelector:
 
             self.subsetindices.add(selected_index)
 
-        self.subsetpointcloud = pc.PointCloud(self.pointcloud.Points[self.subsetindices])
+        self.subsetpointcloud = pc.PointCloud(self.pointcloud.points[self.subsetindices])
 
     def getLandmarkPoints(self):
         """
