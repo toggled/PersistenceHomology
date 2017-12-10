@@ -1,12 +1,20 @@
+from src.idmanager import getId
 class KSimplex:
     def __init__(self, listofvertices, degree=None):
+        if listofvertices == []:
+            self.k = -1
+            self.degree = -1
+            return
         if type(listofvertices[0]) == str:
             self.kvertices = [int(i) for i in listofvertices]
+            self.id = getId(''.join(listofvertices))
         else:
-            self.kvertices = listofvertices
+            self.kvertices = sorted(listofvertices)
+            self.id = getId(''.join([str(i) for i in self.kvertices]))
+
         self.k = len(listofvertices) - 1
         self.name = str(self.k) + '-simplex: ' + str(listofvertices)
-        self.id = -1  # This id is used as index while building transformation matrix
+        # This id is used as index while building transformation matrix
         self.degree = degree  # Degree of a KSimplex is like arrival time of that ksimplex in the simpcompne
         # For Integer indexed filtration degree will be integer, real valued for real valued filtration
 
@@ -36,8 +44,6 @@ class SimplicialComplex:
         self.simplex = []  # Stores all the simplices in the complex
         self.tableofksimplex = {}  # key = k , value = list of k-simplices in the simplicial_complex
         self.maxK = 0  # Keep track of highest Dimensional simplex in the complex
-        self.count_id = {}  # for assigning unique id to each set of simplex
-
 
     def get_allkth_simplices(self, k):
         return sorted([obj for obj in self.tableofksimplex.get(k, [])], key=lambda ob: ob.id)
@@ -67,11 +73,7 @@ class SimplicialComplex:
         self.simplex.append(ksimplex)
         if self.tableofksimplex.get(ksimplex.k, None) is None:
             self.tableofksimplex[ksimplex.k] = []
-            self.count_id[ksimplex.k] = 0
         self.tableofksimplex[ksimplex.k].append(ksimplex)
-        ksimplex.id = self.count_id[ksimplex.k]  # assigning id
-
-        self.count_id[ksimplex.k] += 1  # increasing id for the next k-simplex's id to be id+1
 
         self.maxK = [self.maxK, ksimplex.k][
             ksimplex.k > self.maxK]  # update maxK if a higher dimensional simplex is added
