@@ -129,19 +129,21 @@ class FiltrationArrayCohomologyComputer():
                         unmarked[sigma.k + 1] = [sigma.id]
                         unmarked_basis[sigma.id] = {sigma.id}
 
+
         for card in unmarked.keys():
             for id_sigma in unmarked.get(card, []):
                 birth = self.filtration_ar[self.simplexid_to_indexmap[id_sigma]].degree
                 death = INF
                 self.intervals[card - 1].append((birth, death))
 
-    def print_BettiNumbers(self):
-        repr = ''
-        for dim, li in enumerate(self.intervals):
-            repr += ('dim: ' + str(dim) + '\n')
-            for tup in li:
-                if tup[0] == tup[1]:
-                    continue
-                repr += str(tup)
-            repr += '\n'
-        print repr
+
+def print_BettiNumbers(self):
+    repr = ''
+    for dim, li in enumerate(self.intervals):
+        repr += ('dim: ' + str(dim) + '\n')
+        for tup in li:
+            if tup[0] == tup[1]:
+                continue
+            repr += str(tup)
+        repr += '\n'
+    print repr
