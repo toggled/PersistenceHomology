@@ -30,7 +30,7 @@ class FiltrationArrayCohomologyComputer():
         # we know a simplices degree, id, cardinality/size all from this map
         dummy_counter = 0
         for k in xrange(self.maxdim + 1):
-            for i in xrange(len(filtr.listof_iFiltration)):
+            for i in filtr.listof_iFiltration.keys():
                 for ksimplex in filtr.get_ksimplices_from_ithFiltration(k, i):
                     assert isinstance(ksimplex, KSimplex)
                     if ksimplex and ksimplex.degree <= self.maxfilter:
@@ -49,11 +49,13 @@ class FiltrationArrayCohomologyComputer():
             if sigma.k == 0:  # Vertices
                 list_of_unmarked = unmarked.get(sigma.k + 1, [])
                 if list_of_unmarked:
-                    unmarked[sigma.k + 1].append(sigma.id)
+                    if sigma.id not in unmarked[sigma.k + 1]:
+                        unmarked[sigma.k + 1].append(sigma.id)  # avoid repeatedly storing an id
+                        unmarked_basis[sigma.id] = {sigma.id}
                 else:
                     unmarked[sigma.k + 1] = [sigma.id]
+                    unmarked_basis[sigma.id] = {sigma.id}
 
-                unmarked_basis[sigma.id] = set([sigma.id])
 
             else:
                 destroyer_flag = False
@@ -83,6 +85,13 @@ class FiltrationArrayCohomologyComputer():
                         if deg_id_sigma > most_recently_killed_degree:
                             most_recently_killed_id = id_sigma
                             most_recently_killed_degree = deg_id_sigma
+                        else:
+                            # When both id_sigma and most_recently_killed_id have same degree, we resolve the ordering
+                            # by their index in the filtration_ar
+                            if self.simplexid_to_indexmap[id_sigma] > self.simplexid_to_indexmap[
+                                most_recently_killed_id] and deg_id_sigma == most_recently_killed_degree:
+                                most_recently_killed_id = id_sigma
+                                most_recently_killed_degree = deg_id_sigma
 
                 # If it is a destroyer simplex/ -ve simplex.
                 if destroyer_flag:
@@ -94,8 +103,11 @@ class FiltrationArrayCohomologyComputer():
                     dim = simplex_to_destroy.k
                     self.intervals[dim].append((birth, death))
 
+                    # try:
                     # mark this id. we only keep unmarked ids, unmarked == pivot
                     unmarked[dim + 1].remove(most_recently_killed_id)
+                    # except:
+                    #     print sigma
 
                     # update the bases for all ids in list_bases_toupdate except most_recently_killed_id
                     for id in list_bases_toupdate:
@@ -104,16 +116,17 @@ class FiltrationArrayCohomologyComputer():
 
                     del unmarked_basis[most_recently_killed_id]
 
-                    unmarked_basis[sigma.id] = set([sigma.id])
+                    unmarked_basis[sigma.id] = {sigma.id}
 
                 else:  # New cocycle. A +ve simplex/creator.
                     list_of_unmarked = unmarked.get(sigma.k + 1, [])
                     if list_of_unmarked:
-                        unmarked[sigma.k + 1].append(sigma.id)
+                        if sigma.id not in unmarked[sigma.k + 1]:
+                            unmarked[sigma.k + 1].append(sigma.id)
+                            unmarked_basis[sigma.id] = {sigma.id}
                     else:
                         unmarked[sigma.k + 1] = [sigma.id]
-
-                    unmarked_basis[sigma.id] = set([sigma.id])
+                        unmarked_basis[sigma.id] = {sigma.id}
 
         for card in unmarked.keys():
             for id_sigma in unmarked.get(card, []):
