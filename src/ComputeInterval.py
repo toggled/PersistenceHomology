@@ -22,7 +22,7 @@ class IntervalComputation:
         self.maxdim = maxk
         cnt = 0
         for k in xrange(maxk + 1):
-            for i in xrange(len(filtr.listof_iFiltration)):
+            for i in filtr.listof_iFiltration.keys():
                 for ksimplex in filtr.get_ksimplices_from_ithFiltration(k, i):
                     if ksimplex:
                         self.simplex_to_indexmap[tuple(ksimplex.kvertices)] = cnt
@@ -63,7 +63,7 @@ class IntervalComputation:
                 self.j_ar[i] = j
                 # print '+'.join([str(sigma) for sigma in d])
                 self.T[i] = d
-                if (self.filtration_ar[i].degree <= sigmaj.degree):
+                if self.filtration_ar[i].degree <= sigmaj.degree:
                     self.betti_intervals[k].append((self.filtration_ar[i].degree, sigmaj.degree))
 
         for j, sigmaj in enumerate(self.filtration_ar):
