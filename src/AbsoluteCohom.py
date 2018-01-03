@@ -105,8 +105,8 @@ class FiltrationArrayCohomologyComputer():
                     self.intervals[dim].append((birth, death))
 
                     try:
-                    # mark this id. we only keep unmarked ids, unmarked == pivot
-                    unmarked[dim + 1].remove(most_recently_killed_id)
+                        # mark this id. we only keep unmarked ids, unmarked == pivot
+                        unmarked[dim + 1].remove(most_recently_killed_id)
                     except:
                         print sigma
 
