@@ -13,6 +13,7 @@ class KSimplex:
             self.id = getId(''.join([str(i) for i in self.kvertices]))
 
         self.k = len(listofvertices) - 1
+        self.size = self.k + 1
         self.name = str(self.k) + '-simplex: ' + str(listofvertices)
         # This id is used as index while building transformation matrix
         self.degree = degree  # Degree of a KSimplex is like arrival time of that ksimplex in the simpcompne
@@ -38,6 +39,9 @@ class KSimplex:
     def hasVertex(self, v):
         assert isinstance(v, int)
         return v in self.kvertices
+
+    def size(self):
+        return self.size
 
 class SimplicialComplex:
     def __init__(self):
@@ -70,6 +74,8 @@ class SimplicialComplex:
         :return: None
         '''
         assert isinstance(ksimplex, KSimplex)
+        if ksimplex in self.simplex:  # this prevents repeatedly adding an already existing simplex, if by accident
+            return
         self.simplex.append(ksimplex)
         if self.tableofksimplex.get(ksimplex.k, None) is None:
             self.tableofksimplex[ksimplex.k] = []
