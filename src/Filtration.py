@@ -90,7 +90,10 @@ class Filtration:
         else:
             ksimplex = KSimplex(simplex, i)
             self.listof_iFiltration[i].add_simplex_to_filtration(ksimplex)
-            self.simplex_to_filtrationmap[tuple(ksimplex.kvertices)] = i
+            self.simplex_to_filtrationmap[
+                tuple(ksimplex.kvertices)] = i  # An already added simplex may be overriden by the same
+            # itself if it occurs in a later filtration
+            # Do we allow this?
 
     def add_simplices_from_file(self, filename):
         with open(filename, 'r') as fp:
