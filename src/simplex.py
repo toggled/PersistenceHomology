@@ -7,10 +7,10 @@ class KSimplex:
             return
         if type(listofvertices[0]) == str:
             self.kvertices = [int(i) for i in listofvertices]
-            self.id = getId(''.join(listofvertices))
+            self.id = getId('|'.join(listofvertices))
         else:
             self.kvertices = sorted(listofvertices)
-            self.id = getId(''.join([str(i) for i in self.kvertices]))
+            self.id = getId('|'.join([str(i) for i in self.kvertices]))
 
         self.k = len(listofvertices) - 1
         self.size = self.k + 1
