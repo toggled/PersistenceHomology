@@ -4,10 +4,9 @@ and explained elaborately in:- Persistent Cohomology and Circular Coordinates
 """
 __author__ = 'Naheed'
 
-from collections import Set
-from src.simplex import KSimplex
-from src.boundaryoperator import Boundary
 from idmanager import getId
+from src.boundaryoperator import Boundary
+from src.simplex import KSimplex
 
 INF = float('inf')
 
@@ -217,9 +216,10 @@ class FiltrationArrayCohomologyComputer():
                 break
         self.cc.close()
 
+    def print_BettiNumbers(self):
         for i, listof in enumerate(self.intervals):
             print i
-            print listof
+            print sorted(listof)
 
 
 # An optimized version of Persistent Cohomology algorithm. Only outputs birth-death pairs
@@ -708,7 +708,8 @@ def compute_cohomology(value=None):
                     boundary_set = set([])
                     card_boundary = value.k
                     for sign, boundary in boundary_obj.compute_boundary(value):
-                        boundary_str = ''.join([str(b) for b in boundary.kvertices])
+                        # constuct string repr of the simplex
+                        boundary_str = '|'.join([str(b) for b in boundary.kvertices])
                         id_boundary = getId(boundary_str)
                         boundary_set = boundary_set.union([id_boundary])
 
@@ -766,4 +767,7 @@ def compute_cohomology(value=None):
     finally:
         # print "Don't forget to clean up when 'close()' is called."
         # del indices
-        pass
+        del id_to_degree_map
+        del cardinalities
+        del unmarked
+        del unmarked_basis
