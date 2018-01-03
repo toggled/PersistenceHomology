@@ -74,7 +74,7 @@ class WeakWitnessStream(WitnessStream):
                 :param cardinality: an integer less than |sigma| i.e cardinality of some subset of sigma
                 :return: list
                 """
-                assert cardinality < sigma
+                assert cardinality < len(sigma)
                 for subset in combinations(sigma, cardinality):
                     yield subset
 
