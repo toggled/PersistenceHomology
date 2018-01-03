@@ -68,7 +68,8 @@ class FiltrationArrayCohomologyComputer():
                 boundary_set = set([])
                 card_boundary = sigma.k
                 for sign, boundary in boundary_obj.compute_boundary(sigma):
-                    boundary_str = ''.join([str(b) for b in boundary.kvertices])
+                    # constuct string repr of the simplex
+                    boundary_str = '|'.join([str(b) for b in boundary.kvertices])
                     id_boundary = getId(boundary_str)
                     boundary_set = boundary_set.union([id_boundary])
 
@@ -103,11 +104,11 @@ class FiltrationArrayCohomologyComputer():
                     dim = simplex_to_destroy.k
                     self.intervals[dim].append((birth, death))
 
-                    # try:
+                    try:
                     # mark this id. we only keep unmarked ids, unmarked == pivot
                     unmarked[dim + 1].remove(most_recently_killed_id)
-                    # except:
-                    #     print sigma
+                    except:
+                        print sigma
 
                     # update the bases for all ids in list_bases_toupdate except most_recently_killed_id
                     for id in list_bases_toupdate:
