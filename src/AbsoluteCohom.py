@@ -137,13 +137,34 @@ class FiltrationArrayCohomologyComputer():
                 self.intervals[card - 1].append((birth, death))
 
 
-def print_BettiNumbers(self):
-    repr = ''
-    for dim, li in enumerate(self.intervals):
-        repr += ('dim: ' + str(dim) + '\n')
-        for tup in li:
-            if tup[0] == tup[1]:
-                continue
-            repr += str(tup)
-        repr += '\n'
-    print repr
+    def print_BettiNumbers(self):
+        repr = ''
+        for dim, li in enumerate(self.intervals):
+            repr += ('dim: ' + str(dim) + '\n')
+            for tup in li:
+                if tup[0] == tup[1]:
+                    continue
+                repr += str(tup)
+            repr += '\n'
+        print repr
+
+    def compare(self, phom_intervals):
+        """
+        Compares two intervals whether they are equal
+        """
+        # print sorted(phom_intervals)
+        # print sorted(self.intervals)
+        for dim,li in enumerate(phom_intervals):
+            for pair in li:
+                if pair in self.intervals[0]:
+                    try:
+                        self.intervals[0].remove(pair)
+                    except:
+                        return False
+            if len(self.intervals[0]) == 0:
+                self.intervals.remove([])
+
+        if len(self.intervals):
+            return False
+
+        return True
