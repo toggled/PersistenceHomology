@@ -4,6 +4,9 @@ This algorithm starts from simplices of last filtration to the first.
 For each simplex compute its coboundary. Find the latest appearing simplex in its coboundary. And reduce the rest of the
 simplices which appeared earlier.
 """
+from memory_profiler import profile
+# from profilestats import profile
+
 __author__ = 'Naheed'
 
 from src.simplex import KSimplex
@@ -38,6 +41,7 @@ class FiltrationArrayCohomologyComputer():
                         self.simplexid_to_indexmap[ksimplex.id] = dummy_counter
                         dummy_counter += 1
 
+    @profile
     def compute(self):
         """
         Compute the persistent cohomology
@@ -86,13 +90,13 @@ class FiltrationArrayCohomologyComputer():
                         if deg_id_sigma > most_recently_killed_degree:
                             most_recently_killed_id = id_sigma
                             most_recently_killed_degree = deg_id_sigma
-                        else:
-                            # When both id_sigma and most_recently_killed_id have same degree, we resolve the ordering
-                            # by their index in the filtration_ar
-                            if self.simplexid_to_indexmap[id_sigma] > self.simplexid_to_indexmap[
-                                most_recently_killed_id] and deg_id_sigma == most_recently_killed_degree:
-                                most_recently_killed_id = id_sigma
-                                most_recently_killed_degree = deg_id_sigma
+                        # else:
+                        #     # When both id_sigma and most_recently_killed_id have same degree, we resolve the ordering
+                        #     # by their index in the filtration_ar
+                        #     if self.simplexid_to_indexmap[id_sigma] > self.simplexid_to_indexmap[
+                        #         most_recently_killed_id] and deg_id_sigma == most_recently_killed_degree:
+                        #         most_recently_killed_id = id_sigma
+                        #         most_recently_killed_degree = deg_id_sigma
 
                 # If it is a destroyer simplex/ -ve simplex.
                 if destroyer_flag:
@@ -104,11 +108,10 @@ class FiltrationArrayCohomologyComputer():
                     dim = simplex_to_destroy.k
                     self.intervals[dim].append((birth, death))
 
-                    try:
-                        # mark this id. we only keep unmarked ids, unmarked == pivot
-                        unmarked[dim + 1].remove(most_recently_killed_id)
-                    except:
-                        print sigma
+
+                    # mark this id. we only keep unmarked ids, unmarked == pivot
+                    unmarked[dim + 1].remove(most_recently_killed_id)
+
 
                     # update the bases for all ids in list_bases_toupdate except most_recently_killed_id
                     for id in list_bases_toupdate:
