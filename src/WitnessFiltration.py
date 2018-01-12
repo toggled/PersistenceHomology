@@ -3,7 +3,7 @@ __author__ = 'Naheed'
 from itertools import combinations
 import math
 from src.PointCloud import PointCloud
-from src.Selector import PointCloudSelector
+from src.Selector import *
 from src.Filtration import RealvaluedFiltration
 from src.simplex import KSimplex
 import numpy as np
@@ -156,7 +156,7 @@ class MetricWitnessStream:
         Strong Witness Complex Class for Arbitrary metric space.
         :param landmarkselector = Selector.MetricSelector object
         """
-        assert isinstance(metriclandmarkselector, Selector.MetricSelector)
+        assert isinstance(metriclandmarkselector, MetricSelector)
         self.maxdist = maxdistance
         self.numdiv = numdivision
         self.maxdim = maxdimension
