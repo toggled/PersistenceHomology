@@ -41,7 +41,7 @@ class FiltrationArrayCohomologyComputer():
                         self.simplexid_to_indexmap[ksimplex.id] = dummy_counter
                         dummy_counter += 1
 
-    @profile
+    # @profile
     def compute(self):
         """
         Compute the persistent cohomology
