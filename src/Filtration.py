@@ -1,5 +1,4 @@
 from src.simplex import SimplicialComplex, KSimplex
-from memory_profiler import profile
 
 __author__ = 'Naheed'
 
