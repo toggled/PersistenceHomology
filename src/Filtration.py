@@ -1,4 +1,5 @@
 from src.simplex import SimplicialComplex, KSimplex
+from memory_profiler import profile
 
 __author__ = 'Naheed'
 
@@ -142,6 +143,31 @@ class Filtration:
     def __len__(self):
         return sum([len(a) for a in self.listof_iFiltration.values()])
 
+    def write_boundarylists_to(self, filename):
+        """
+        Writes a real valued filtration to a .fil file. We need to write a filtration first if later we
+        want to read filtration by chunk.
+        The format is:-
+        Each line:- simplex-id,Its Boundary(the id of the simplices seperated by space),filtration value,
+        dimension of the simplex
+        """
+        from src.boundaryoperator import Boundary
+        with open(filename,"w+") as fp:
+            for i in range(len(self.listof_iFiltration)):
+                ith_fil = self.get_ithfiltration(i)
+                fil_value = str(i)
+                assert isinstance(ith_fil, iFiltration)
+                for sigma in ith_fil.simplicial_complex.simplex:
+                    assert isinstance(sigma, KSimplex)
+                    simplex_id = sigma.id
+                    bd = Boundary()
+                    bd.compute_boundary(sigma)
+                    bd_list = []
+                    for sign, face in bd.get_boundary():
+                        assert isinstance(face, KSimplex)
+                        bd_list.append(face.id)
+                    bd_str = ' '.join(bd_list)
+                    fp.write(simplex_id + "," + bd_str + "," + fil_value + "," + str(sigma.k) + "\n")
 
 class RealvaluedFiltration(object):
     """
@@ -260,3 +286,35 @@ class RealvaluedFiltration(object):
         Returns the total number of simplices in the filtration
         """
         return sum([len(a) for a in self.listof_iFiltration.values()])
+
+    def write_boundarylists_to(self,filename):
+        """
+        Writes a real valued filtration to a .fil file. We need to write a filtration first if later we
+        want to read filtration by chunk.
+        The format is:-
+        Each line:- simplex-id,Its Boundary(the id of the simplices seperated by space),filtration value,
+        dimension of the simplex
+        """
+        from src.boundaryoperator import Boundary
+        with open(filename,'w+') as fp:
+            for i in range(len(self.listof_iFiltration)):
+                ith_fil = self.get_ithfiltration(i)
+                fil_value = str(self.filtration_values[i])
+                # assert isinstance(ith_fil,iFiltration)
+                if not ith_fil:
+                    continue
+                for sigma in ith_fil.simplicial_complex.simplex:
+                    assert isinstance(sigma,KSimplex)
+                    simplex_id = sigma.id
+                    bd = Boundary()
+                    bd.compute_boundary(sigma)
+                    bd_list = []
+                    for sign,face in bd.get_boundary():
+                        assert isinstance(face,KSimplex)
+                        bd_list.append(face.id)
+                    bd_str = ' '.join(bd_list)
+                    fp.write(simplex_id+","+bd_str+","+fil_value+","+str(sigma.k)+"\n")
+
+
+
+
