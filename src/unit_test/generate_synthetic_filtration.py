@@ -153,16 +153,18 @@ def generateForNaturalImg(N, D, rootdir):
     import src.PointCloud as pc
 
     filtration_sizes = [0.0] * N
+    filename = rootdir+'pointsRange.mat'
 
     for n in xrange(N):
-        # print "Iteration: ", n
+        p = pc.MatlabPointCloud(filename, 'pointsRange')
+        print p.dimension, p.size
+        p.compute_distancematrix()
+        print "Iteration: ", n
         # mean = [0, 0]
         # cov = [[1, 0], [0, 1]]
         # matrixofpoints_inR2 = np.random.multivariate_normal(mean, cov, 100)
         # p = pc.PointCloud(matrixofpoints_inR2)
-        filename = '/Users/naheed/PycharmProjects/PersistenceHomology/data/pointsRange.mat'
-        p = pc.MatlabPointCloud(filename, 'pointsRange')
-        p.compute_distancematrix()
+
 
         # Typically for 2D, according to paper <= N/20. so N/20, N/25, N/30, N/35, N/40 is fine
         NumLandmarks = int(p.size / D)
@@ -187,7 +189,7 @@ def generateForNaturalImg(N, D, rootdir):
 
         filtration_sizes[n] = len(ws)
 
-        ws.write_boundarylists_to(rootdir+'eight'+'_'+str(maxdim)+'_'+str(NumLandmarks)+"_"+str(len(ws))+".fil")
+        ws.write_boundarylists_to(rootdir+'pointsRange'+'_'+str(maxdim)+'_'+str(NumLandmarks)+"_"+str(len(ws))+".fil")
         # start_time = time()
         # cohom = FiltrationArrayCohomologyComputer(ws, maxdim, R)
         # cohom.compute()
@@ -216,12 +218,10 @@ def generateForNaturalImg(N, D, rootdir):
     # print "Standard deviation (", N, " run) runtime for Absolute Cohomology: \n", np.std(
     #     abs_cohom_exectime)
 
-
-
 if __name__ == "__main__":
     # Test Average execution time of Eight data, time to sample 100 landmarks in Maxmin and Constrution of filtration
     # For strong, Lazy both
     # testWitnessStream_Maxmin(100)
-    for d in range(10, 5-1, -1):
+    for d in range(100, 50-1, -10):
         print "d: ", d
-        generateForNaturalImg(1, d,rootdir='/Users/naheed/PycharmProjects/PersistenceHomology/data/')
+        generateForNaturalImg(1, d,rootdir='../data/')
