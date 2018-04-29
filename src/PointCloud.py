@@ -47,3 +47,23 @@ class MatlabPointCloud(PointCloud):
             raise Exception('incorrect variable specified.')
 
         super(MatlabPointCloud, self).__init__(points)
+
+
+class TextPointCloud(PointCloud):
+    def __init__(self,textfilename, column_sep = ' '):
+        """
+        Class for constructing  Euclidean Point cloud data from vector of points (each point in one line) in text file.
+        :param textfilename: A .txt file containing 2D matrix of Pointclouds.
+                Points across row, dimension across column.
+        :param column_sep: The delimeter by which each the dimensions are separated in a line.
+        """
+        assert isinstance(textfilename,str)
+        preprocessed_points = None
+        try:
+            with open(textfilename,'r') as f:
+                raw_points = f.readlines()
+                preprocessed_points = map(lambda z:[float(i) for i in z.split(column_sep)], raw_points)
+        except:
+            raise IOError
+
+        super(TextPointCloud, self).__init__(preprocessed_points)
