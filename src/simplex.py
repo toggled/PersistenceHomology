@@ -21,7 +21,7 @@ class KSimplex:
 
     def __str__(self):
         # return nice string representation of the k-simplex like 01, 12, 012, 1234 etc
-        return ','.join([str(i) + ":" + str(self.degree) for i in self.kvertices])
+        return self.id+","+ (' '.join([str(i) for i in self.kvertices]))
 
     def __eq__(self, other):
         '''
