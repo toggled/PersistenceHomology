@@ -27,6 +27,14 @@ class PointCloud(object):
         """
         self.distmat = spatial.distance.squareform(spatial.distance.pdist(self.points, metric='euclidean'))
 
+    def getdistance(self, index_i,index_j):
+        """
+        Returns the distance between points at index index_i and index_j
+        """
+        if self.distmat is not None:
+            return self.distmat[index_i][index_j]
+        else:
+            raise Exception("Distance matrix does not exists.")
 
 class MatlabPointCloud(PointCloud):
     def __init__(self, matlabfilename, varname):
