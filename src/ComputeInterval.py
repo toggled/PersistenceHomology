@@ -1,3 +1,5 @@
+from memory_profiler import profile
+
 from simplex import KSimplex
 from boundaryoperator import Boundary
 
@@ -37,6 +39,7 @@ class IntervalComputation:
 
         #print self.simplex_to_indexmap
 
+    # @profile
     def compute_intervals(self, K=None):
         """
         :param K: K as in Betti_K
