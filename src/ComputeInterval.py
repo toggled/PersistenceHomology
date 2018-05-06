@@ -37,8 +37,6 @@ class IntervalComputation:
         self.marked = [False] * len(self.filtration_ar)  # Boolean flag for marked simplices.
         self.j_ar = [None] * len(self.filtration_ar)
 
-        #print self.simplex_to_indexmap
-
     # @profile
     def compute_intervals(self, K=None):
         """
@@ -144,3 +142,20 @@ class IntervalComputation:
                 repr += "}\n"
                 # repr+="\n"
         print repr
+
+    def get_intervals_asnumpyarray(self):
+        import numpy as np
+        dtype = [('dim', int), ('birth', float), ('death', float)]
+
+        out = np.array([], dtype=dtype)
+        for dim, l in enumerate(self.betti_intervals):
+            npa = np.array(l)
+            print dim
+            dim_vec = np.ones((len(l), 1), dtype=int)*dim
+            print dim_vec[:5]
+            res = np.append(dim_vec, npa)
+            res.dtype = dtype
+            # print np.append(out,res)
+            out = np.append(out, res)
+        # out.dtype = dtype
+        return out
