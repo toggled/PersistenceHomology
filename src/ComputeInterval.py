@@ -144,18 +144,21 @@ class IntervalComputation:
         print repr
 
     def get_intervals_asnumpyarray(self):
+        """
+        Returns the persistent intervals as numpy array of size nx3
+        :returns numpy array
+        """
         import numpy as np
-        dtype = [('dim', int), ('birth', float), ('death', float)]
+        total_bars = 0
+        for l in self.betti_intervals:
+            total_bars += len(l)
 
-        out = np.array([], dtype=dtype)
+        # dt = np.dtype([('dim', int), ('birth',float), ('death',float)])
+        # dt = np.dtype({'names': ['dim', 'birth', 'death'], 'formats': ['i8', 'f8', 'f8']})
+        out = np.empty((0,3))
+
         for dim, l in enumerate(self.betti_intervals):
-            npa = np.array(l)
-            print dim
-            dim_vec = np.ones((len(l), 1), dtype=int)*dim
-            print dim_vec[:5]
-            res = np.append(dim_vec, npa)
-            res.dtype = dtype
-            # print np.append(out,res)
-            out = np.append(out, res)
-        # out.dtype = dtype
-        return out
+            for tup in l:
+                out = np.append(out, np.asarray([dim, tup[0], tup[1]]))
+
+        return out.reshape((total_bars,3))
