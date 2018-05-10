@@ -65,7 +65,7 @@ class IntervalComputation:
                 # print '+'.join([str(sigma) for sigma in d])
                 self.T[i] = d
                 if self.filtration_ar[i].degree <= sigmaj.degree:
-                    self.betti_intervals[k].append((self.filtration_ar[i].degree, sigmaj.degree))
+                    self.betti_intervals[k].append((self.filtration_ar[i].getdegree(),sigmaj.getdegree()))
 
         for j, sigmaj in enumerate(self.filtration_ar):
             if K:
@@ -73,7 +73,7 @@ class IntervalComputation:
                     break  # K-simplices occur as boundary of K+1 simplices. therefore we need sigmaj.k <= K+1
             if self.marked[j] and self.j_ar[j] is None:
                 k = sigmaj.k
-                self.betti_intervals[k].append((sigmaj.degree, INF))
+                self.betti_intervals[k].append((sigmaj.getdegree(),INF))
 
     def remove_pivot_rows(self, simplex):
         assert isinstance(simplex, KSimplex)
@@ -161,4 +161,4 @@ class IntervalComputation:
             for tup in l:
                 out = np.append(out, np.asarray([dim, tup[0], tup[1]]))
 
-        return out.reshape((total_bars,3))
+        return out.reshape((total_bars, 3))
