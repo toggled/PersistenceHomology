@@ -19,11 +19,10 @@ class RipsFiltration(RealvaluedFiltration):
     The implementation follows the algorithm by Afra Zomorodian in his paper 'Fast vietoris rips'
     """
     def __init__(self, point_cloud, numdivision, maxdimension, maxfiltervalue):
+        super(RipsFiltration, self).__init__(np.linspace(0.0, maxfiltervalue, numdivision + 1))
         self.point_cloud = point_cloud
         self.numdiv = numdivision
         self.maxdim = maxdimension
-        self.maxdegree = maxfiltervalue
-        super(RipsFiltration, self).__init__(np.linspace(0.0, maxfiltervalue, numdivision + 1))
 
 
 class BruteForceRips(RealvaluedFiltration):
@@ -33,7 +32,7 @@ class BruteForceRips(RealvaluedFiltration):
         self.point_cloud = point_cloud
         self.numdiv = numdivision
         self.maxdim = maxdimension
-        self.maxdegree = maxfiltervalue
+        print self.maxfiltration_val
 
     def construct(self):
 
@@ -51,12 +50,11 @@ class BruteForceRips(RealvaluedFiltration):
             # Add an edge [ab] if there exists
             #   a p in pointcloud such that max(d(a,p),d(b,p))< filtration_value + d(p,2nd nearest neighbor of p)
             # Find the edges which satisfy the conditions
+            # print 'here'
             for i, index_a in enumerate(self.point_cloud):
                 for j in xrange(i + 1, self.point_cloud.size):
                     # Checking whether (index_a,index_b) can be a simplex
                     potential_simplex_indices = [i, j]
-
-
                     # euclid_dist = np.linalg.norm(index_a - self.point_cloud[j])
                     euclid_dist = self.point_cloud.getdistance(i,j)
 
@@ -71,7 +69,7 @@ class BruteForceRips(RealvaluedFiltration):
                             adjacancy_list[i].append((j, euclid_dist)) # Store the edge and its filtration val
                         else:
                             adjacancy_list[j].append((i, euclid_dist))
-
+        # print 'here'
         if maxcardinality_simplex > 2:
             # Add simplices of higher order
             # I need a generator function. Given a list L of length l, and a vertex v,
@@ -87,11 +85,12 @@ class BruteForceRips(RealvaluedFiltration):
                 for subset in combinations(L, k-1):
                     yield subset + e
 
-            for idx_start in xrange(self.point_cloud.size):
+            for idx_start in adjacancy_list.keys():
                 for idx_end, filtration_val in adjacancy_list[idx_start]:
                     for cardinality_cofaces in xrange(3, maxcardinality_simplex + 1):
 
-                        for sigma in get_ksimplex_containingedge(range(self.point_cloud.size),cardinality_cofaces-1,(idx_start,idx_end) ):
+                        for sigma in get_ksimplex_containingedge(range(self.point_cloud.size), cardinality_cofaces-1, (idx_start,idx_end) ):
+                            # print sigma
                             tmax = -np.inf
                             new_simplex = None
                             face_missing = False
