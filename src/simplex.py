@@ -43,6 +43,12 @@ class KSimplex:
     def size(self):
         return self.size
 
+    def getdegree(self):
+        """
+        :rtype float
+        """
+        return float(self.degree)
+
 class SimplicialComplex:
     def __init__(self):
         self.simplex = []  # Stores all the simplices in the complex
