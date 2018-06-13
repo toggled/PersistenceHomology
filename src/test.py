@@ -285,6 +285,17 @@ def testCSVreader():
         param={"title":"Probability = "+str(prob[i]), "xlabels": ("Weak-Witness", "Vietoris Rips")}
         pv.qual_compare_barcodes_fromPersViz(secondbarViz= pv2, write=True,writefilename="WScompare_500_5_"+ str(prob[i])+ ".pdf", param = param)
 
+def test_graph_witness():
+    from src.Selector import GraphSelector
+    import networkx as nx
+
+    path = '/Users/naheed/Google Drive/tda-sna/'
+    filename = 'core-blah.txt'
+    g = nx.read_edgelist(path + filename, nodetype=int, data=(('weight', float),))
+    s = GraphSelector(g, subsetsize=5, algorithm="RandomSelector")
+    print s.getLandmarkPoints()
+
+
 if __name__ == "__main__":
     # testpointcloud()
     # testTextPointCloud()
@@ -296,6 +307,7 @@ if __name__ == "__main__":
     # testWitnessStream()
     # testWitnessStreamPH()
     # testWitnessStreamPerCom()
+    test_graph_witness()
 
     # comparebars()
-    testCSVreader()
+    # testCSVreader()
