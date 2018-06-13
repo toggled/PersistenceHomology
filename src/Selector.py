@@ -1,7 +1,7 @@
 import PointCloud as pc
 import numpy as np
 import DistanceMetricinput
-
+import networkx as nx
 
 class PointCloudSelector:
     def __init__(self, pointcloud, subsetsize, algorithm):
@@ -167,3 +167,64 @@ class MetricSelector:
         # compute max
         self.MaxMindist = np.max(dist_closestpoints)
         return self.MaxMindist
+
+class GraphSelector():
+    def __init__(self, graph, subsetsize, algorithm):
+        import pandas as pd
+        assert isinstance(graph, nx.Graph)
+        self.graph = graph
+        self.subsetsize = subsetsize
+        assert isinstance(algorithm, str)
+        self.algorithm = algorithm
+
+        self.nodes = sorted(graph.nodes)
+        table = {}
+        for n in self.nodes:
+            shortest_path_lengths = nx.shortest_path_length(graph, n)
+            l = []
+            for m in self.nodes:
+                l.append(shortest_path_lengths.get(m, None))
+            table[n] = l
+
+        self.distmat = pd.DataFrame(table, columns=self.nodes, index=self.nodes)
+        del table
+
+        self.subsetnodes = None
+        self.subsetnodes_indices = None
+
+    def select(self):
+        if self.algorithm == "MaxminSelector":
+            self.runmaxmin()
+        if self.algorithm == "RandomSelector":
+            self.runrandom()
+
+    def runrandom(self):
+        if self.subsetsize > len(self.nodes):
+            raise Exception("Subset size can not be more than the size of the Pointcloud")
+        elif self.subsetsize == len(self.nodes):
+            self.subsetnodes_indices = range(0, len(self.nodes), 1)
+        else:
+            self.subsetnodes_indices = np.random.choice(len(self.nodes), self.subsetsize, replace=False)
+
+        self.subsetnodes = np.asarray(self.nodes)[self.subsetnodes_indices]
+        # print self.subsetnodes_indices
+        # print self.subsetnodes
+        #
+        # print self.distmat
+        # print self.distmat.take(self.subsetnodes_indices, axis=0)
+
+    def getLandmarkPoints(self):
+        """
+        :rtype a PointCloud object
+        """
+        if self.subsetnodes is None:
+            self.select()
+        return self.subsetnodes
+
+    def getLandmark_Witness_matrix(self):
+        """
+        Landmarks X Witness points distance matrix
+        """
+        return self.distmat.take(self.subsetnodes_indices, axis=0)
+
+
