@@ -17,6 +17,30 @@ class PointCloudSelector:
         self.MaxMindist = None
         self.subsetpointcloud = None
 
+    def getDataPoints(self):
+        """
+        return the Datapoints
+        """
+        return self.pointcloud
+
+    def isEmptyLandmarkset(self):
+        """
+        return true if Landmarkset is empty
+        """
+        return self.subsetpointcloud is None
+
+    def getDistanceMatrix(self):
+        """
+        Return the whole NxN matrix, n = |Landmarks|, N = |Point Cloud|
+        """
+        return self.pointcloud.distmat
+
+    def getLandmark_Witness_matrix(self):
+        """
+        return n x N matrix, n = |Landmarks|, N = |Point Cloud|
+        """
+        return np.copy(self.pointcloud.distmat[self.subsetindices])  # ndarray
+
     def select(self):
         if self.algorithm == "MaxminSelector":
             self.runmaxmin()
@@ -63,6 +87,11 @@ class PointCloudSelector:
 
         self.subsetpointcloud = pc.PointCloud(self.pointcloud.points[self.subsetindices])
 
+    def getLandmarkindices(self):
+        """
+        returns the indices of the landmarks
+        """
+        return self.subsetindices
 
     def getLandmarkPoints(self):
         """
@@ -315,6 +344,31 @@ class GraphSelector():
         if self.subsetnodes is None:
             self.select()
         return self.subsetnodes
+
+    def getLandmarkindices(self):
+        """
+        returns the indices of the landmarks
+        """
+        return self.subsetnodes_indices
+
+    def getDataPoints(self):
+        """
+        return the Datapoints
+        """
+        return self.nodes
+
+    def isEmptyLandmarkset(self):
+        """
+        return true if Landmarkset is empty
+        """
+        return self.subsetnodes is None
+
+
+    def getDistanceMatrix(self):
+        """
+        Return the whole NxN matrix, n = |Landmarks|, N = |Point Cloud|
+        """
+        return self.distmat
 
     def getLandmark_Witness_matrix(self):
         """
