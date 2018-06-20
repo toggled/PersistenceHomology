@@ -17,18 +17,18 @@ class WitnessStream(RealvaluedFiltration):
         """
         super(WitnessStream, self).__init__(np.linspace(0, maxdistance, numdivision + 1))
         # assert isinstance(landmarkselector,PointCloudSelector)
-        self.pointcloud = landmarkselector.pointcloud  # PointCloud object
-        if not landmarkselector.subsetpointcloud:
+        self.pointcloud = landmarkselector.getDataPoints()
+        if not landmarkselector.isEmptyLandmarkset():
             landmarkselector.select()
-        self.landmarkset = landmarkselector.subsetpointcloud  # PointCloud object
-        self.landmarkindices = landmarkselector.subsetindices
+        self.landmarkset = landmarkselector.getLandmarkPoints()
+        self.landmarkindices = landmarkselector.getLandmarkindices()
         #assert isinstance(self.landmarkset, PointCloud)
         self.maxdist = maxdistance
         self.numdiv = numdivision
         self.maxdim = maxdimension
-        # Compute the distance matrix of dimension |landmarkset|x|pointcloud|
-        if landmarkselector.pointcloud.distmat is None:
-            landmarkselector.pointcloud.compute_distancematrix()
+        # # Compute the distance matrix of dimension |landmarkset|x|pointcloud|
+        # if landmarkselector.pointcloud.distmat is None:
+        #     landmarkselector.pointcloud.compute_distancematrix()
         # print 'len: ', landmarkselector.pointcloud.distmat.shape
         self.dist_landmarkstoPointcloud = landmarkselector.getLandmark_Witness_matrix()
         self.distmat = landmarkselector.getDistanceMatrix()
@@ -110,10 +110,9 @@ class WitnessStream(RealvaluedFiltration):
                                 continue  # A face is missing from the filtration for the simplex.
 
                             # potential_simplex = self.pointcloud.points[potential_simplex_indices]
-                            new_simplex = None
                             tmin = np.inf
 
-                            for index_z, z in enumerate(self.pointcloud.points):  # Try to find witness
+                            for index_z, z in enumerate(self.pointcloud):  # Try to find witness
                                 check_value = self.getMaxDistance(index_z, potential_simplex_indices) - distances[index_z][
                                     cardinality_cofaces - 1]
                                 if tmin > check_value and check_value <= self.maxdist:
@@ -229,7 +228,7 @@ class WitnessStream(RealvaluedFiltration):
 
     def getNearestNeighbours(self, k):
         k_nearest_distances = []
-        for witness_idx in xrange(len(self.pointcloud.points)):
+        for witness_idx in xrange(len(self.pointcloud)):
             alldistances = np.copy(self.dist_landmarkstoPointcloud[:, witness_idx])
             alldistances.sort(kind='quicksort')
             k_nearest_distances.append(alldistances[0:k + 1])

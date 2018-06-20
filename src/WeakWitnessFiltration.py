@@ -49,17 +49,14 @@ class WeakWitnessStream(WitnessStream):
                     # Checking whether (index_a,index_b) can be a simplex
                     tmin = np.inf
                     potential_simplex_indices = [index_a, self.landmarkindices[index_b]]
-                    potential_simplex = [self.landmarkset.points[i], self.landmarkset.points[index_b]]
                     # print 'testing: ',potential_simplex
-                    new_simplex = None
                     for index_z, z in enumerate(self.pointcloud.points):
-                        check_value = self.getMaxDistance(z, potential_simplex) - distances[index_z]
-
+                        check_value = self.getMaxDistance(index_z, potential_simplex_indices) - distances[index_z]
                         if tmin > check_value and check_value <= self.maxdist:
                             tmin = max(check_value, 0)
-                            new_simplex = KSimplex(potential_simplex_indices, degree=tmin)
 
-                    if new_simplex is not None:
+                    if tmin < np.inf:
+                        new_simplex = KSimplex(potential_simplex_indices, degree=tmin)
                         filtration_val = tmin
                         filtration_indx = math.ceil(
                             tmin / self.diff_filtrationval)  # compute filtration index from filtration value.
