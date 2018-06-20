@@ -59,7 +59,7 @@ class WitnessStream(RealvaluedFiltration):
                     potential_simplex_indices = [index_a, self.landmarkindices[index_b]]
                     # potential_simplex = [self.landmarkset.points[i], self.landmarkset.points[index_b]]
                     # print 'testing: ',potential_simplex
-                    for index_z, z in enumerate(self.pointcloud.points):
+                    for index_z, z in enumerate(self.pointcloud):
                         check_value = self.getMaxDistance(index_z, potential_simplex_indices) - distances[index_z][1]
                         if tmin > check_value and check_value <= self.maxdist:
                             tmin = check_value
