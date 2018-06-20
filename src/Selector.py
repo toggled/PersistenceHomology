@@ -197,6 +197,92 @@ class GraphSelector():
             self.runmaxmin()
         if self.algorithm == "RandomSelector":
             self.runrandom()
+        if self.algorithm == "MaxdegSelector":
+            self.runtopkdeg()
+        if self.algorithm == "optMaxminSelector":
+            self.runtoptmaxmin()
+        if self.algorithm == "avoidSelector":
+            self.runavoid()
+
+    def runmaxmin(self):
+        import random
+        graphsize = len(self.nodes)
+        mindist_ptolandmarkset = np.full(graphsize, np.inf)
+        self.subsetnodes_indices = []
+        i = 0
+        while i < self.subsetsize:
+            if i == 0:
+                selected_index = random.randint(0, graphsize - 1)
+                # update min for all the rest indices
+                # update min for this index to 0.
+                for z in xrange(graphsize):
+                    # if z == selected_index:
+                    #     mindist_ptolandmarkset[z] = 0.0
+                    # else:
+                    mindist_ptolandmarkset[z] = self.distmat.iat[selected_index, z]
+            else:
+                selected_index = np.argmax(mindist_ptolandmarkset)
+                # update minimum distance for all points
+                for z in xrange(graphsize):
+                    mindist_ptolandmarkset[z] = min(mindist_ptolandmarkset[z],
+                                                    self.distmat.iat[selected_index, z])
+
+            self.subsetnodes_indices.append(selected_index)
+            i += 1
+
+        self.subsetnodes = np.asarray(self.nodes)[self.subsetnodes_indices]
+
+    def runtoptmaxmin(self):
+        import random
+        graphsize = len(self.nodes)
+        mindist_ptolandmarkset = np.full(graphsize, np.inf)
+        self.subsetnodes_indices = []
+        initial_indices = []
+        i = 0
+        while i < self.subsetsize:
+            if i == 0:
+                selected_index = random.randint(0, graphsize - 1)
+                for z in xrange(graphsize):
+                    mindist_ptolandmarkset[z] = self.distmat.iat[selected_index, z]
+            else:
+                selected_index = np.argmax(mindist_ptolandmarkset)
+                # update minimum distance for all points
+                for z in xrange(graphsize):
+                    mindist_ptolandmarkset[z] = min(mindist_ptolandmarkset[z],
+                                                    self.distmat.iat[selected_index, z])
+
+            initial_indices.append(selected_index)
+            i += 1
+        initial_nodes = self.subsetnodes = np.asarray(self.nodes)[initial_indices]
+        print 'initial indices', initial_indices
+        print 'initial nodes', initial_nodes
+
+        i = 0
+        while i < self.subsetsize:
+            index_to_del = random.choice(initial_indices)
+            initial_indices.remove(index_to_del)
+            # initial_nodes.remove(self.nodes.iat[index_to_del])
+
+            max_val = 0
+            selected_index = 0
+            remaining = set(range(0, self.subsetsize))-set(initial_indices)
+            for indices_choice in remaining:
+                min_val = float("Inf")
+                for z in initial_indices:
+                    if self.distmat.iat[indices_choice, z] < min_val:
+                        min_val = self.distmat.iat[indices_choice, z]
+                if min_val > max_val:
+                    max_val = min_val
+                    selected_index = indices_choice
+
+            initial_indices.append(selected_index)
+            # initial_nodes.append(self.nodes.iat[selected_index])
+            i += 1
+
+        print 'after optimization ', initial_indices
+
+        self.subsetnodes_indices = initial_indices
+        self.subsetnodes = np.asarray(self.nodes)[initial_indices]
 
     def runrandom(self):
         if self.subsetsize > len(self.nodes):
@@ -212,6 +298,15 @@ class GraphSelector():
         #
         # print self.distmat
         # print self.distmat.take(self.subsetnodes_indices, axis=0)
+
+    def runtopkdeg(self):
+
+        node_degree_pair_list_sorted = sorted(list(self.graph.degree()), key = lambda key: key[1], reverse= True)[:self.subsetsize]
+        self.subsetnodes_indices = [i for (i, j) in node_degree_pair_list_sorted]
+        self.subsetnodes = np.asarray(self.nodes)[self.subsetnodes_indices]
+
+    def runavoid(self):
+        pass
 
     def getLandmarkPoints(self):
         """
