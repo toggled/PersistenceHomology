@@ -3,6 +3,7 @@ import numpy as np
 import DistanceMetricinput
 import networkx as nx
 
+
 class PointCloudSelector:
     def __init__(self, pointcloud, subsetsize, algorithm):
         assert isinstance(pointcloud, pc.PointCloud)
@@ -368,12 +369,21 @@ class GraphSelector():
         """
         Return the whole NxN matrix, n = |Landmarks|, N = |Point Cloud|
         """
-        return self.distmat
+        return self.distmat.as_matrix()
 
     def getLandmark_Witness_matrix(self):
         """
         Landmarks X Witness points distance matrix
         """
-        return self.distmat.take(self.subsetnodes_indices, axis=0)
+        return np.copy(self.distmat.take(self.subsetnodes_indices, axis=0))
 
-
+    def get_maxdistance_landmarktoPointcloud(self):
+        """
+        Computes max_z in Pointcloud d(z,L) where d(z,L) = min_l in L(Dist(z,l)
+        :rtype float (farthest distance of the closest points in Landmarkset from Pointcloud)
+        """
+        if self.subsetnodes_indices is None:  # Make sure tat the landmark set is already constructed.
+            self.select()
+        landmarktopointcloud_dist = self.getLandmark_Witness_matrix()
+        self.MaxMindist = np.max(np.min(landmarktopointcloud_dist, axis=0))  # Compute max of the min of each column
+        return self.MaxMindist
