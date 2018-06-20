@@ -60,14 +60,13 @@ class WitnessStream(RealvaluedFiltration):
                     potential_simplex_indices = [index_a, self.landmarkindices[index_b]]
                     potential_simplex = [self.landmarkset.points[i], self.landmarkset.points[index_b]]
                     # print 'testing: ',potential_simplex
-                    new_simplex = None
                     for index_z, z in enumerate(self.pointcloud.points):
-                        check_value = self.getMaxDistance(z, potential_simplex) - distances[index_z][1]
+                        check_value = self.getMaxDistance(index_z, potential_simplex_indices) - distances[index_z][1]
                         if tmin > check_value and check_value <= self.maxdist:
-                            new_simplex = KSimplex(potential_simplex_indices, degree=check_value)
                             tmin = check_value
 
-                    if new_simplex is not None:
+                    if tmin < np.inf:
+                        new_simplex = KSimplex(potential_simplex_indices, degree=tmin)
                         filtration_val = tmin
                         filtration_indx = math.ceil(
                             tmin / self.diff_filtrationval)  # compute filtration index from filtration value.
@@ -101,8 +100,7 @@ class WitnessStream(RealvaluedFiltration):
                         for newpt in self.landmarkindices:
                             if newpt in new_simplex_vertices:
                                 continue
-                            potential_simplex_indices = new_simplex_vertices + [
-                                newpt]  # this won't change simplex.kvertices list
+                            potential_simplex_indices = new_simplex_vertices + [newpt]  # this won't change simplex.kvertices list
                             # Check whether all the faces of potential_simplex_indices are present or not up until now
                             for face in getFacesContainingV(new_simplex_vertices, newpt):
                                 if self.simplex_to_filtrationmap.get(face, None) is None:
@@ -117,13 +115,13 @@ class WitnessStream(RealvaluedFiltration):
                             tmin = np.inf
 
                             for index_z, z in enumerate(self.pointcloud.points):  # Try to find witness
-                                check_value = self.getMaxDistance(z, potential_simplex) - distances[index_z][
+                                check_value = self.getMaxDistance(index_z, potential_simplex_indices) - distances[index_z][
                                     cardinality_cofaces - 1]
                                 if tmin > check_value and check_value <= self.maxdist:
-                                    new_simplex = KSimplex(potential_simplex_indices, degree=check_value)
                                     tmin = check_value
 
-                            if new_simplex is not None:
+                            if tmin < np.inf:
+                                new_simplex = KSimplex(potential_simplex_indices, degree=tmin)
                                 filtration_val = tmin
                                 filtration_indx = math.ceil(
                                     tmin / self.diff_filtrationval)  # compute filtration index from filtration value.
@@ -238,17 +236,12 @@ class WitnessStream(RealvaluedFiltration):
             k_nearest_distances.append(alldistances[0:k + 1])
         return np.array(k_nearest_distances)
 
-    def getMaxDistance(self, point, listofpoints, metric='euclidean'):
+    def getMaxDistance(self, point, listofpoints):
         """
         :returns maximum distance from a given point to a pointset
         :rtype: float
         """
-
-        def euclideandist(pointa, pointb):
-            return math.sqrt(sum((pointa - pointb) ** 2))
-
-        if metric == 'euclidean':
-            return max(euclideandist(point, x) for x in listofpoints)
+        return max(self.pointcloud.distmat[point][x] for x in listofpoints)
 
 class MetricWitnessStream:
     def __init__(self, metriclandmarkselector, maxdistance, numdivision, maxdimension):
