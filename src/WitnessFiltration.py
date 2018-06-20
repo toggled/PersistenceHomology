@@ -30,9 +30,8 @@ class WitnessStream(RealvaluedFiltration):
         if landmarkselector.pointcloud.distmat is None:
             landmarkselector.pointcloud.compute_distancematrix()
         # print 'len: ', landmarkselector.pointcloud.distmat.shape
-        self.dist_landmarkstoPointcloud = np.copy(
-            landmarkselector.pointcloud.distmat[landmarkselector.subsetindices])  # ndarray
-
+        self.dist_landmarkstoPointcloud = landmarkselector.getLandmark_Witness_matrix()
+        self.distmat = landmarkselector.getDistanceMatrix()
 
     def construct(self):
         """
@@ -58,7 +57,7 @@ class WitnessStream(RealvaluedFiltration):
                     # Check whether (index_a,index_b) can be a simplex
                     tmin = np.inf
                     potential_simplex_indices = [index_a, self.landmarkindices[index_b]]
-                    potential_simplex = [self.landmarkset.points[i], self.landmarkset.points[index_b]]
+                    # potential_simplex = [self.landmarkset.points[i], self.landmarkset.points[index_b]]
                     # print 'testing: ',potential_simplex
                     for index_z, z in enumerate(self.pointcloud.points):
                         check_value = self.getMaxDistance(index_z, potential_simplex_indices) - distances[index_z][1]
@@ -110,7 +109,7 @@ class WitnessStream(RealvaluedFiltration):
                             if a_face_is_missing:
                                 continue  # A face is missing from the filtration for the simplex.
 
-                            potential_simplex = self.pointcloud.points[potential_simplex_indices]
+                            # potential_simplex = self.pointcloud.points[potential_simplex_indices]
                             new_simplex = None
                             tmin = np.inf
 
@@ -241,7 +240,8 @@ class WitnessStream(RealvaluedFiltration):
         :returns maximum distance from a given point to a pointset
         :rtype: float
         """
-        return max(self.pointcloud.distmat[point][x] for x in listofpoints)
+
+        return max(self.distmat[point][x] for x in listofpoints)
 
 class MetricWitnessStream:
     def __init__(self, metriclandmarkselector, maxdistance, numdivision, maxdimension):
