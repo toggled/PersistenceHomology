@@ -76,7 +76,7 @@ class IntervalComputation:
                 self.betti_intervals[k].append((sigmaj.getdegree(),INF))
 
     def remove_pivot_rows(self, simplex):
-        assert isinstance(simplex, KSimplex)
+        # assert isinstance(simplex, KSimplex)
         k = simplex.k
         bd = Boundary()
         d = set([])
