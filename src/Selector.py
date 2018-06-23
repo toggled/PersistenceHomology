@@ -5,7 +5,7 @@ import networkx as nx
 
 
 class PointCloudSelector:
-    def __init__(self, pointcloud, subsetsize, algorithm):
+    def __init__(self, pointcloud, subsetsize, algorithm, seed = 1):
         assert isinstance(pointcloud, pc.PointCloud)
 
         self.pointcloud = pointcloud
@@ -17,6 +17,7 @@ class PointCloudSelector:
         self.subsetindices = []  # Indices of the points chosen from 2D matrix. A subset of {0,1,...,n-1}
         self.MaxMindist = None
         self.subsetpointcloud = None
+        self.seed = seed
 
     def getDataPoints(self):
         """
@@ -49,14 +50,14 @@ class PointCloudSelector:
             self.runrandom()
 
     def runrandom(self):
-
+        rnd = np.random.RandomState(seed=self.seed)
         self.subsetindices = []
         if self.subsetsize > self.pointcloud.size:
             raise Exception("Subset size can not be more than the size of the Pointcloud")
         elif self.subsetsize == self.pointcloud.size:
             self.subsetindices = range(0, self.pointcloud.size, 1)
         else:
-            self.subsetindices = np.random.choice(self.pointcloud.size, self.subsetsize, replace=False)
+            self.subsetindices = rnd.choice(self.pointcloud.size, self.subsetsize, replace=False)
 
         self.subsetpointcloud = pc.PointCloud(self.pointcloud.points[self.subsetindices])
 
@@ -65,6 +66,7 @@ class PointCloudSelector:
         construct max min landmarks set
         """
         import random
+        random.seed(self.seed)
         mindist_ptolandmarkset = np.full(self.pointcloud.size, np.inf)
         self.subsetindices = []
         for i in xrange(self.subsetsize):
