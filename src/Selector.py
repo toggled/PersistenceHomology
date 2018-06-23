@@ -199,7 +199,7 @@ class MetricSelector:
         return self.MaxMindist
 
 class GraphSelector():
-    def __init__(self, graph, subsetsize, algorithm):
+    def __init__(self, graph, subsetsize, algorithm, seed = 1):
         import pandas as pd
         assert isinstance(graph, nx.Graph)
         self.graph = graph
@@ -219,8 +219,9 @@ class GraphSelector():
         self.distmat = pd.DataFrame(table, columns=self.nodes, index=self.nodes)
         del table
 
-        self.subsetnodes = None
-        self.subsetnodes_indices = None
+        self.subsetnodes = []
+        self.subsetnodes_indices = []
+        self.seed = int(seed)
 
     def select(self):
         if self.algorithm == "MaxminSelector":
@@ -236,6 +237,7 @@ class GraphSelector():
 
     def runmaxmin(self):
         import random
+        random.seed(self.seed)
         graphsize = len(self.nodes)
         mindist_ptolandmarkset = np.full(graphsize, np.inf)
         self.subsetnodes_indices = []
@@ -264,6 +266,8 @@ class GraphSelector():
 
     def runtoptmaxmin(self):
         import random
+        random.seed(self.seed)
+
         graphsize = len(self.nodes)
         mindist_ptolandmarkset = np.full(graphsize, np.inf)
         self.subsetnodes_indices = []
@@ -283,7 +287,7 @@ class GraphSelector():
 
             initial_indices.append(selected_index)
             i += 1
-        initial_nodes = self.subsetnodes = np.asarray(self.nodes)[initial_indices]
+        initial_nodes = np.asarray(self.nodes)[initial_indices]
         print 'initial indices', initial_indices
         print 'initial nodes', initial_nodes
 
@@ -315,12 +319,13 @@ class GraphSelector():
         self.subsetnodes = np.asarray(self.nodes)[initial_indices]
 
     def runrandom(self):
+        rnd = np.random.RandomState(seed = self.seed)
         if self.subsetsize > len(self.nodes):
             raise Exception("Subset size can not be more than the size of the Pointcloud")
         elif self.subsetsize == len(self.nodes):
             self.subsetnodes_indices = range(0, len(self.nodes), 1)
         else:
-            self.subsetnodes_indices = np.random.choice(len(self.nodes), self.subsetsize, replace=False)
+            self.subsetnodes_indices = rnd.choice(len(self.nodes), self.subsetsize, replace=False)
 
         self.subsetnodes = np.asarray(self.nodes)[self.subsetnodes_indices]
         # print self.subsetnodes_indices
@@ -342,7 +347,7 @@ class GraphSelector():
         """
         :rtype a PointCloud object
         """
-        if self.subsetnodes is None:
+        if len(self.subsetnodes) == 0:
             self.select()
         return self.subsetnodes
 
@@ -362,7 +367,7 @@ class GraphSelector():
         """
         return true if Landmarkset is empty
         """
-        return self.subsetnodes is None
+        return len(self.subsetnodes) == 0
 
 
     def getDistanceMatrix(self):
@@ -382,7 +387,7 @@ class GraphSelector():
         Computes max_z in Pointcloud d(z,L) where d(z,L) = min_l in L(Dist(z,l)
         :rtype float (farthest distance of the closest points in Landmarkset from Pointcloud)
         """
-        if self.subsetnodes_indices is None:  # Make sure tat the landmark set is already constructed.
+        if len(self.subsetnodes) == 0:  # Make sure tat the landmark set is already constructed.
             self.select()
         landmarktopointcloud_dist = self.getLandmark_Witness_matrix()
         self.MaxMindist = np.max(np.min(landmarktopointcloud_dist, axis=0))  # Compute max of the min of each column
