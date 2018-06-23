@@ -64,11 +64,6 @@ class WeakWitnessStream(WitnessStream):
                                                           simplex=new_simplex)
         if maxcardinality_simplex > 2:
             # Adding simplices of higher order
-            def getFacesContainingV(L, v):
-                sz = len(L) - 1
-                for subset in combinations(L, sz):
-                    yield subset + (v,)
-
             for cardinality_cofaces in xrange(3, maxcardinality_simplex + 1):
                 for i in xrange(self.numdiv + 1):
                     # max_filtration_val = t[i]
@@ -76,12 +71,12 @@ class WeakWitnessStream(WitnessStream):
                         # Compute all cofaces and check the condition
                         assert isinstance(simplex, KSimplex)
                         new_simplex_vertices = simplex.kvertices
-
-                        tmax = 0
+                        tmax = 0.0
+                        threshold = simplex.degree
 
                         for newpt in self.landmarkindices:
                             edge_missing = False
-                            if newpt not in new_simplex_vertices:
+                            if not simplex.hasVertex(newpt):
                                 for v in new_simplex_vertices:
                                     edge = [newpt, v]
                                     if edge[0] > edge[1]:
@@ -91,18 +86,16 @@ class WeakWitnessStream(WitnessStream):
                                         edge_missing = True
                                         break
                                     else:
-                                        tmax = max(tmax, edge_fil_val)
+                                        tmax = max(max(tmax, edge_fil_val), threshold)
 
-                                if edge_missing or tmax > self.maxdist:
-                                    continue
-                            if tmax <= self.maxdist and not edge_missing:
-                                filtration_val = tmax
-                                new_simplex = new_simplex_vertices[:]
-                                new_simplex.append(newpt)
-                                filtration_indx = math.ceil(
-                                    tmax / self.diff_filtrationval)  # compute filtration index from filtration value.
-                                self.add_simplex_toith_filtration(i=filtration_indx, filtration_val=filtration_val,
-                                                                  simplex=KSimplex(new_simplex))
+                                if tmax <= self.maxdist and not edge_missing:
+                                    filtration_val = tmax
+                                    new_simplex = new_simplex_vertices[:]
+                                    new_simplex.append(newpt)
+                                    filtration_indx = math.ceil(
+                                        tmax / self.diff_filtrationval)  # compute filtration index from filtration value.
+                                    self.add_simplex_toith_filtration(i=filtration_indx, filtration_val=filtration_val,
+                                                                      simplex=KSimplex(new_simplex))
 
     def getEdgefiltration_val(self, edge):
         """
