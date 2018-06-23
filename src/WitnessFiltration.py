@@ -64,7 +64,7 @@ class WitnessStream(RealvaluedFiltration):
                         if check_value <= self.maxdist:
                             tmin = max(min(check_value, tmin), 0.0)  # incase min(check_value,tmin) <0
 
-                    if tmin < np.inf:
+                    if tmin < self.maxdist:
                         new_simplex = KSimplex(potential_simplex_indices, degree=tmin)
                         filtration_val = tmin
                         filtration_indx = math.ceil(
@@ -94,35 +94,39 @@ class WitnessStream(RealvaluedFiltration):
                         # Compute all cofaces and check the condition
                         assert isinstance(simplex, KSimplex)
                         new_simplex_vertices = simplex.kvertices
-
                         a_face_is_missing = False
                         for newpt in self.landmarkindices:
+                            threshold = 0.0
                             if newpt in new_simplex_vertices:
                                 continue
                             potential_simplex_indices = new_simplex_vertices + [newpt]  # this won't change simplex.kvertices list
                             # Check whether all the faces of potential_simplex_indices are present or not up until now
                             for face in getFacesContainingV(new_simplex_vertices, newpt):
-                                if self.simplex_to_filtrationmap.get(face, None) is None:
+                                face_degree = self.simplex_to_filtrationmap.get(face, None)
+                                if face_degree is None:
                                     a_face_is_missing = True
+                                else:
+                                    threshold = max(threshold, face_degree)
+
                                 if a_face_is_missing:
                                     break
                             if a_face_is_missing:
                                 continue  # A face is missing from the filtration for the simplex.
 
                             # potential_simplex = self.pointcloud.points[potential_simplex_indices]
-                            tmin = np.inf
-
+                            tmax = np.inf  # The new simplex containing simplex as a subface must appear >= simplex.degree.
+                            # Find the minimum filtration where
                             for index_z, z in enumerate(self.pointcloud):  # Try to find witness
                                 check_value = self.getMaxDistance(index_z, potential_simplex_indices) - distances[index_z][
                                     cardinality_cofaces - 1]
-                                if tmin > check_value and check_value <= self.maxdist:
-                                    tmin = check_value
+                                if threshold <= check_value <= self.maxdist:
+                                    tmax = max(min(tmax, check_value), threshold)
 
-                            if tmin < np.inf:
-                                new_simplex = KSimplex(potential_simplex_indices, degree=tmin)
-                                filtration_val = tmin
+                            if tmax <= self.maxdist:
+                                new_simplex = KSimplex(potential_simplex_indices, degree=tmax)
+                                filtration_val = tmax
                                 filtration_indx = math.ceil(
-                                    tmin / self.diff_filtrationval)  # compute filtration index from filtration value.
+                                    tmax / self.diff_filtrationval)  # compute filtration index from filtration value.
                                 self.add_simplex_toith_filtration(i=filtration_indx, filtration_val=filtration_val,
                                                                   simplex=new_simplex)
 
