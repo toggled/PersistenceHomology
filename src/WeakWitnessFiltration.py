@@ -64,37 +64,45 @@ class WeakWitnessStream(WitnessStream):
                                                           simplex=new_simplex)
         if maxcardinality_simplex > 2:
             # Adding simplices of higher order
-            def getsubfaces(sigma, cardinality):
-                """
-                Yields cardinality sized subsets of simplex sigma
-                :param sigma: a list (a simplex)
-                :param cardinality: an integer less than |sigma| i.e cardinality of some subset of sigma
-                :return: list
-                """
-                assert cardinality < len(sigma)
-                for subset in combinations(sigma, cardinality):
-                    yield subset
+            def getFacesContainingV(L, v):
+                sz = len(L) - 1
+                for subset in combinations(L, sz):
+                    yield subset + (v,)
 
             for cardinality_cofaces in xrange(3, maxcardinality_simplex + 1):
-                for newsigma in getsubfaces(self.landmarkindices, cardinality_cofaces):
-                    tmax = -1
-                    edge_missing = False
-                    for edge in getsubfaces(newsigma,
-                                            2):  # We are only checking whether the edges are there. not all the faces.
-                        edge_fil_val = self.getEdgefiltration_val(edge)
-                        if edge_fil_val == np.inf:
-                            edge_missing = True
-                            break
-                        else:
-                            tmax = max(tmax, edge_fil_val)
-                    if edge_missing or tmax > self.maxdist:
-                        continue
-                    if tmax <= self.maxdist:
-                        filtration_val = tmax
-                        filtration_indx = math.ceil(
-                            tmax / self.diff_filtrationval)  # compute filtration index from filtration value.
-                        self.add_simplex_toith_filtration(i=filtration_indx, filtration_val=filtration_val,
-                                                          simplex=KSimplex(newsigma))
+                for i in xrange(self.numdiv + 1):
+                    # max_filtration_val = t[i]
+                    for simplex in self.get_ksimplices_from_ithFiltration(cardinality_cofaces - 2, i):
+                        # Compute all cofaces and check the condition
+                        assert isinstance(simplex, KSimplex)
+                        new_simplex_vertices = simplex.kvertices
+
+                        tmax = 0
+
+                        for newpt in self.landmarkindices:
+                            edge_missing = False
+                            if newpt not in new_simplex_vertices:
+                                for v in new_simplex_vertices:
+                                    edge = [newpt, v]
+                                    if edge[0] > edge[1]:
+                                        edge[0], edge[1] = edge[1], edge[0]
+                                    edge_fil_val = self.getEdgefiltration_val(tuple(edge))
+                                    if edge_fil_val == np.inf:
+                                        edge_missing = True
+                                        break
+                                    else:
+                                        tmax = max(tmax, edge_fil_val)
+
+                                if edge_missing or tmax > self.maxdist:
+                                    continue
+                            if tmax <= self.maxdist and not edge_missing:
+                                filtration_val = tmax
+                                new_simplex = new_simplex_vertices[:]
+                                new_simplex.append(newpt)
+                                filtration_indx = math.ceil(
+                                    tmax / self.diff_filtrationval)  # compute filtration index from filtration value.
+                                self.add_simplex_toith_filtration(i=filtration_indx, filtration_val=filtration_val,
+                                                                  simplex=KSimplex(new_simplex))
 
     def getEdgefiltration_val(self, edge):
         """
