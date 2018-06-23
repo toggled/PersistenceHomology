@@ -50,10 +50,10 @@ class WeakWitnessStream(WitnessStream):
                     tmin = np.inf
                     potential_simplex_indices = [index_a, self.landmarkindices[index_b]]
                     # print 'testing: ',potential_simplex
-                    for index_z, z in enumerate(self.pointcloud.points):
+                    for index_z, z in enumerate(self.pointcloud):
                         check_value = self.getMaxDistance(index_z, potential_simplex_indices) - distances[index_z]
-                        if tmin > check_value and check_value <= self.maxdist:
-                            tmin = max(check_value, 0)
+                        if check_value <= self.maxdist:
+                            tmin = max(min(check_value, tmin), 0.0) # incase min(check_value,tmin) <0
 
                     if tmin < np.inf:
                         new_simplex = KSimplex(potential_simplex_indices, degree=tmin)
@@ -87,7 +87,7 @@ class WeakWitnessStream(WitnessStream):
                             break
                         else:
                             tmax = max(tmax, edge_fil_val)
-                    if tmax < 0 or edge_missing:
+                    if edge_missing or tmax > self.maxdist:
                         continue
                     if tmax <= self.maxdist:
                         filtration_val = tmax
@@ -111,7 +111,7 @@ class WeakWitnessStream(WitnessStream):
         :return the list of distances to the k-th nearest neighbor for the points in the pointcloud
         """
         k_nearest_distances = []
-        for witness_idx in xrange(len(self.pointcloud.points)):
+        for witness_idx in xrange(len(self.pointcloud)):
             alldistances = np.copy(self.dist_landmarkstoPointcloud[:, witness_idx])
             alldistances.sort(kind='quicksort')
             k_nearest_distances.append(alldistances[k])

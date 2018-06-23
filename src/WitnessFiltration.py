@@ -18,7 +18,7 @@ class WitnessStream(RealvaluedFiltration):
         super(WitnessStream, self).__init__(np.linspace(0, maxdistance, numdivision + 1))
         # assert isinstance(landmarkselector,PointCloudSelector)
         self.pointcloud = landmarkselector.getDataPoints()
-        if not landmarkselector.isEmptyLandmarkset():
+        if landmarkselector.isEmptyLandmarkset():
             landmarkselector.select()
         self.landmarkset = landmarkselector.getLandmarkPoints()
         self.landmarkindices = landmarkselector.getLandmarkindices()
@@ -61,8 +61,8 @@ class WitnessStream(RealvaluedFiltration):
                     # print 'testing: ',potential_simplex
                     for index_z, z in enumerate(self.pointcloud):
                         check_value = self.getMaxDistance(index_z, potential_simplex_indices) - distances[index_z][1]
-                        if tmin > check_value and check_value <= self.maxdist:
-                            tmin = check_value
+                        if check_value <= self.maxdist:
+                            tmin = max(min(check_value, tmin), 0.0)  # incase min(check_value,tmin) <0
 
                     if tmin < np.inf:
                         new_simplex = KSimplex(potential_simplex_indices, degree=tmin)
