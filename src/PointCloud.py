@@ -20,6 +20,9 @@ class PointCloud(object):
     def __getitem__(self, item):
         return self.points.__getitem__(item)
 
+    def __len__(self):
+        return len(self.points)
+
     def compute_distancematrix(self):
         """
         Computes Euclidean Distance Matrix (for now)
