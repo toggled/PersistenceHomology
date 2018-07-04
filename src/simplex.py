@@ -18,6 +18,7 @@ class KSimplex:
         # This id is used as index while building transformation matrix
         self.degree = degree  # Degree of a KSimplex is like arrival time of that ksimplex in the simpcompne
         # For Integer indexed filtration degree will be integer, real valued for real valued filtration
+        self.boundary = None
 
     def __str__(self):
         # return nice string representation of the k-simplex like 01, 12, 012, 1234 etc
