@@ -97,7 +97,7 @@ class BruteForceRips(RealvaluedFiltration):
 
                             for edge in combinations(sigma, 2):
                                 # print edge
-                                edge = [(edge[0],edge[1]), (edge[1],edge[0])][edge[0] > edge[1]]
+                                edge = [(edge[0],edge[1]), (edge[1], edge[0])][edge[0] > edge[1]]
                                 edge_missing = True
 
                                 for (end_v, filtr_val) in adjacancy_list[edge[0]]:
