@@ -225,6 +225,14 @@ class GraphSelector():
         self.subsetnodes_indices = []
         self.seed = int(seed)
 
+    def normalize_distancematrix(self):
+        """
+        Some times the graph distances are needed to be normalized.
+        """
+        INF = self.distmat.max().max()
+        df = self.distmat.fillna(INF)
+        self.distmat = (df - df.min()) / (df.max() - df.min())
+
     def select(self):
         if self.algorithm == "MaxminSelector":
             self.runmaxmin()
@@ -392,5 +400,5 @@ class GraphSelector():
         if len(self.subsetnodes) == 0:  # Make sure tat the landmark set is already constructed.
             self.select()
         landmarktopointcloud_dist = self.getLandmark_Witness_matrix()
-        self.MaxMindist = np.max(np.min(landmarktopointcloud_dist, axis=0))  # Compute max of the min of each column
+        self.MaxMindist = np.nanmax(np.nanmin(landmarktopointcloud_dist, axis=0))  # Compute max of the min of each column
         return self.MaxMindist
