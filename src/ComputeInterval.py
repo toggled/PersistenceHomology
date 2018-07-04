@@ -65,7 +65,7 @@ class IntervalComputation:
                 # print '+'.join([str(sigma) for sigma in d])
                 self.T[i] = d
                 if self.filtration_ar[i].degree <= sigmaj.degree:
-                    self.betti_intervals[k].append((self.filtration_ar[i].getdegree(),sigmaj.getdegree()))
+                    self.betti_intervals[k].append((self.filtration_ar[i].getdegree(), sigmaj.getdegree()))
 
         for j, sigmaj in enumerate(self.filtration_ar):
             if K:
