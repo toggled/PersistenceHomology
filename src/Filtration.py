@@ -1,4 +1,5 @@
 from src.simplex import SimplicialComplex, KSimplex
+from sortedcontainers import SortedDict
 
 __author__ = 'Naheed'
 
@@ -151,7 +152,7 @@ class Filtration:
         dimension of the simplex
         """
         from src.boundaryoperator import Boundary
-        with open(filename,"w+") as fp:
+        with open(filename, "w+") as fp:
             for i in range(len(self.listof_iFiltration)):
                 ith_fil = self.get_ithfiltration(i)
                 fil_value = str(i)
@@ -168,7 +169,8 @@ class Filtration:
                     bd_str = ' '.join(bd_list)
                     fp.write(simplex_id + "," + bd_str + "," + fil_value + "," + str(sigma.k) + "\n")
 
-class RealvaluedFiltration(object):
+
+class OldRealvaluedFiltration(object):
     """
         A filtration where each iFiltration has real value
     """
@@ -314,6 +316,123 @@ class RealvaluedFiltration(object):
                     bd_str = ' '.join(bd_list)
                     fp.write(simplex_id+","+bd_str+","+fil_value+","+str(sigma.k)+"\n")
 
+#
 
 
+class RealvaluedFiltration():
+    """
+    Simpler implementation of a Filtration.
+    """
 
+    def __init__(self, filtration_values=None):
+        """
+        it is the superclasses responsibility to make sure only those simplices which requires to be stored
+        are indeed stored in self.simplex_container.
+        """
+        if filtration_values is not None:
+            self.filtration_values = filtration_values
+            self.maxfiltration_val = filtration_values[-1]  # largest filtration value
+            self.diff_filtrationval = filtration_values[1] - filtration_values[0]
+        else:
+            self.maxfiltration_val = 0
+
+        self.simplex_container = SortedDict()
+        self.totalsimplices = 0
+        self.max_dimension = 0
+
+    def add_simplex_to_filtration(self, simplex):
+        """
+        A simplex is added and max_dimension, totalsimplices , max filtration value up until this addition
+        is updated.
+        """
+        assert isinstance(simplex, KSimplex)
+        assert not (simplex.degree == -1 or simplex.degree is None)
+
+        if self.simplex_container.get(simplex.degree) is None:
+            self.simplex_container[simplex.degree] = [simplex]
+        else:
+            self.simplex_container[simplex.degree].append(simplex)
+
+        self.totalsimplices += 1
+        self.max_dimension = max(self.max_dimension, simplex.k)
+        self.maxfiltration_val = max(self.maxfiltration_val, int(simplex.degree))
+
+    def get_simplices(self):
+        """
+        iterate over the simplices in this filtration in ascending order of their filtration,
+        then by their cardinality
+        """
+        for (deg, simplex) in self.simplex_container.items():
+            print "degree: ", deg
+            container = sorted(simplex, key=lambda tau: tau.k)
+            for sigma in container:
+                yield sigma
+
+    def add_simplices_from_file(self, filename):
+        from src.boundaryoperator import Boundary
+
+        with open(filename, 'r') as fp:
+            while 1:
+                line = fp.readline()
+                if not line:
+                    break
+                simplex, filtr_idx = line.split(',')
+                # Building the K-simplex object .
+                # I better insert them in sorted order to avoid orientation conflict
+                # between higher dimensional simplices.
+                ksimplex_obj = KSimplex(sorted([int(v) for v in
+                                                simplex.split()]), degree=float(filtr_idx))
+                if ksimplex_obj.k > 0:
+                    bd = Boundary()
+                    bdary = []
+                    for sign, face in bd.compute_boundary(ksimplex_obj):
+                        bdary.append(face.id)
+                    ksimplex_obj.boundary = bdary
+                self.add_simplex_to_filtration(ksimplex_obj)
+
+        return self
+
+    def write_boundarylists_to_filFile(self, filename):
+        """
+        Writes a real valued filtration to a .fil file. We need to write a filtration first if later we
+        want to read them.
+        The format is:-
+        Each line:- simplex-id,Its Boundary(the id of the simplices seperated by space),filtration value,
+        dimension of the simplex
+        """
+        from src.boundaryoperator import Boundary
+        with open(filename, 'w+') as fp:
+            for sigma in self.get_simplices():
+                assert isinstance(sigma, KSimplex)
+                simplex_id = sigma.id
+                bd = Boundary()
+                bd.compute_boundary(sigma)
+                bd_list = sigma.boundary
+                if sigma.k>0 and bd_list == []:
+                    for sign, face in bd.get_boundary():
+                        assert isinstance(face, KSimplex)
+                        bd_list.append(face.id)
+                bd_str = ' '.join(bd_list)
+                fp.write(simplex_id+","+bd_str+","+sigma.degree+","+str(sigma.k)+"\n")
+
+    def add_filtration_from_filFile(self, filename):
+        with open(filename, 'r') as fp:
+            while 1:
+                line = fp.readline().strip()
+                if not line:
+                    break
+                line = line.split(',')
+                ksimplex_obj = KSimplex([])
+                # get the cardinality of the simplex first
+                ksimplex_obj.k = int(line[-1])
+                if ksimplex_obj.k>0:
+                    pass
+                ksimplex_obj.id = line[0]
+                ksimplex_obj.degree = float(line[-2])
+                ksimplex_obj.boundary = line[1].split()
+                self.add_simplex_to_filtration(ksimplex_obj)
+        print "total simplices in fil file", self.totalsimplices
+        return self
+
+    def __len__(self):
+        return self.totalsimplices
