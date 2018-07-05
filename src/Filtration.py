@@ -1,5 +1,6 @@
-from src.simplex import SimplicialComplex, KSimplex
+from simplex import SimplicialComplex, KSimplex
 from sortedcontainers import SortedDict
+from boundaryoperator import Boundary
 
 __author__ = 'Naheed'
 
@@ -316,20 +317,17 @@ class OldRealvaluedFiltration(object):
                     bd_str = ' '.join(bd_list)
                     fp.write(simplex_id+","+bd_str+","+fil_value+","+str(sigma.k)+"\n")
 
-#
 
-
-class RealvaluedFiltration():
+class RealvaluedFiltration(object):
     """
     Simpler implementation of a Filtration.
     """
-
-    def __init__(self, filtration_values=None):
+    def __init__(self, filtration_values=[]):
         """
         it is the superclasses responsibility to make sure only those simplices which requires to be stored
         are indeed stored in self.simplex_container.
         """
-        if filtration_values is not None:
+        if filtration_values is not []:
             self.filtration_values = filtration_values
             self.maxfiltration_val = filtration_values[-1]  # largest filtration value
             self.diff_filtrationval = filtration_values[1] - filtration_values[0]
@@ -351,7 +349,10 @@ class RealvaluedFiltration():
         if self.simplex_container.get(simplex.degree) is None:
             self.simplex_container[simplex.degree] = [simplex]
         else:
-            self.simplex_container[simplex.degree].append(simplex)
+            if simplex not in self.simplex_container[simplex.degree]:
+                self.simplex_container[simplex.degree].append(simplex)
+            else:
+                return
 
         self.totalsimplices += 1
         self.max_dimension = max(self.max_dimension, simplex.k)
@@ -363,13 +364,11 @@ class RealvaluedFiltration():
         then by their cardinality
         """
         for (deg, simplex) in self.simplex_container.items():
-            print "degree: ", deg
             container = sorted(simplex, key=lambda tau: tau.k)
             for sigma in container:
                 yield sigma
 
     def add_simplices_from_file(self, filename):
-        from src.boundaryoperator import Boundary
 
         with open(filename, 'r') as fp:
             while 1:
@@ -425,8 +424,8 @@ class RealvaluedFiltration():
                 ksimplex_obj = KSimplex([])
                 # get the cardinality of the simplex first
                 ksimplex_obj.k = int(line[-1])
-                if ksimplex_obj.k>0:
-                    pass
+                # if ksimplex_obj.k>0:
+                #     pass
                 ksimplex_obj.id = line[0]
                 ksimplex_obj.degree = float(line[-2])
                 ksimplex_obj.boundary = line[1].split()
