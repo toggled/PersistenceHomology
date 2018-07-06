@@ -26,21 +26,24 @@ class IncrementalRips(RealvaluedFiltration):
 
     # @profile
     def construct(self):
-
         maxcardinality_simplex = self.maxdim + 1
         nbr_graph = nx.Graph()
 
         if maxcardinality_simplex > 1:
             # We compute the neighborhood graph first
-            for i, j in np.column_stack(np.triu_indices(self.point_cloud.size, 1)):
-                euclid_dist = self.point_cloud.getdistance(i, j)
-                if euclid_dist <= self.maxfiltration_val:
-                    nbr_graph.add_edge(i, j, filtration=euclid_dist)
-                else:
-                    nbr_graph.add_node(i)
-                    nbr_graph.add_node(j)
+            for i, _ in enumerate(self.point_cloud):
+                j = i + 1
+                while j < self.point_cloud.size:
+                    # for i, j in np.column_stack(np.triu_indices(self.point_cloud.size, 1)):
+                    euclid_dist = self.point_cloud.getdistance(i, j)
+                    if euclid_dist <= self.maxfiltration_val:
+                        nbr_graph.add_edge(i, j, filtration=euclid_dist)
+                    else:
+                        nbr_graph.add_node(i)
+                        nbr_graph.add_node(j)
+                    j += 1
 
-            print 'nodes ', len(nbr_graph.nodes), ' edges ', len(nbr_graph.edges)
+            # print 'nodes ', len(nbr_graph.nodes), ' edges ', len(nbr_graph.edges)
 
             def getlowerneighbor(v):
                 return set([u for u in nbr_graph.neighbors(v) if u > v])
