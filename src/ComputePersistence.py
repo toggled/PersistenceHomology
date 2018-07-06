@@ -1,7 +1,7 @@
 from memory_profiler import profile
 from idmanager import getId
 from simplex import KSimplex
-from src.Filtration import *
+from Filtration import *
 from boundaryoperator import Boundary
 
 __author__ = 'Naheed'
@@ -11,7 +11,8 @@ INF = float('inf')
 
 class IntervalComputation:
     """
-    This class provides simple way of computing persistence.  Simpler than ComputeInterval.py file
+    This class provides simple way of computing persistence which is compliant with the new Filtration definition.
+    Simpler than ComputeInterval.py file
     """
     def __init__(self, filtr, maxk, max_filtration_val):
         assert isinstance(filtr, RealvaluedFiltration)
