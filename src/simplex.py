@@ -1,4 +1,5 @@
-from src.idmanager import getId
+from idmanager import getId
+
 class KSimplex:
     def __init__(self, listofvertices, degree=None):
         if listofvertices == []:
@@ -22,7 +23,7 @@ class KSimplex:
 
     def __str__(self):
         # return nice string representation of the k-simplex like 01, 12, 012, 1234 etc
-        return self.id+","+ (' '.join([str(i) for i in self.kvertices]))
+        return self.id+"," + (' '.join([str(i) for i in self.kvertices]))
 
     def __eq__(self, other):
         '''
@@ -30,9 +31,10 @@ class KSimplex:
         :param other: Another KSimplex
         :return: true if both simplex are same or may be just different orientation
         '''
-        if self.k == other.k:
-            return sorted(self.kvertices) == sorted(other.kvertices)
-        return False
+        # if self.id == other.id:
+        #     return sorted(self.kvertices) == sorted(other.kvertices)
+        # return False
+        return self.id == other.id
 
     def isEmpty(self):
         return self.k < 0
@@ -49,6 +51,16 @@ class KSimplex:
         :rtype float
         """
         return float(self.degree)
+
+    def setBoundary(self):
+        if self.boundary is None:
+            self.boundary = []
+            j = 0
+            while j < self.k + 1:
+                bd = getId('|'.join([str(elem) for elem in self.kvertices[:j] + self.kvertices[j+1:]]))
+                self.boundary.append(bd)
+                j += 1
+
 
 class SimplicialComplex:
     def __init__(self):
