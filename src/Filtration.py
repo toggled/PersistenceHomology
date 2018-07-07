@@ -435,3 +435,9 @@ class RealvaluedFiltration(object):
 
     def __len__(self):
         return self.totalsimplices
+
+    def __str__(self):
+        strrep = ''
+        for simplex in self.get_simplices():
+            strrep += (str(simplex)+'\n')
+        return strrep
