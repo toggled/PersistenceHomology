@@ -29,11 +29,11 @@ class IncrementalRips(RealvaluedFiltration):
         maxcardinality_simplex = self.maxdim + 1
         nbr_graph = nx.Graph()
 
-        if maxcardinality_simplex > 1:
+        if maxcardinality_simplex >= 1:
             # We compute the neighborhood graph first
             for i, _ in enumerate(self.point_cloud):
                 j = i + 1
-                while j < self.point_cloud.size:
+                while j < len(self.point_cloud):
                     # for i, j in np.column_stack(np.triu_indices(self.point_cloud.size, 1)):
                     euclid_dist = self.point_cloud.getdistance(i, j)
                     if euclid_dist <= self.maxfiltration_val:
@@ -65,7 +65,7 @@ class IncrementalRips(RealvaluedFiltration):
                     new_simplex.setBoundary()
                 self.add_simplex_to_filtration(new_simplex)
 
-                if len(tau) >= maxcardinality_simplex:
+                if len(tau) > maxcardinality_simplex:
                     return
                 else:
                     for v in N:
