@@ -5,7 +5,7 @@ This module contains class definitions to deal Point Cloud data coming from diff
 import numpy as np
 from scipy import spatial
 import scipy.io
-
+import networkx as nx
 
 class PointCloud(object):
     def __init__(self, matrixofpoints):
@@ -21,7 +21,7 @@ class PointCloud(object):
         return self.points.__getitem__(item)
 
     def __len__(self):
-        return len(self.points)
+        return self.size
 
     def compute_distancematrix(self):
         """
@@ -38,6 +38,25 @@ class PointCloud(object):
             return self.distmat[index_i][index_j]
         else:
             raise Exception("Distance matrix does not exists.")
+
+
+class GraphPointcloud(PointCloud):
+    def __init__(self, nxgraph):
+        super(GraphPointcloud, self).__init__(nxgraph.nodes)
+        assert isinstance(nxgraph, nx.Graph)
+        self.graph = nxgraph
+        self.distmat = None
+        self.size = len(nxgraph)
+
+    def compute_distancematrix(self):
+        self.distmat = nx.floyd_warshall_numpy()
+
+    def getdistance(self, index_i, index_j):
+        return self.distmat[index_i][index_j]
+
+    def __getitem__(self, index):
+        return self.graph.nodes.keys()[index]
+
 
 class MatlabPointCloud(PointCloud):
     def __init__(self, matlabfilename, varname):
