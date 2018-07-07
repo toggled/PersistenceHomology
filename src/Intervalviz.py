@@ -19,7 +19,7 @@ class PersistenceViz:
         assert isinstance(self.intervals, list)
         self.INF = replace_Inf
 
-    def draw_barcodes(self, write= False, writefilename= None):
+    def viz_barcodes(self, write= False, writefilename= None):
         """
         Draw persistence barcodes corresponding to the intervals (list) in this class.
         """
@@ -55,7 +55,9 @@ class PersistenceViz:
 
             ax.autoscale()
             ax.margins(0.1)
-        pl.show()
+        # pl.show(block=True)
+        if write and writefilename is not None:
+            pl.savefig(writefilename, format="pdf")
 
     def qual_compare_barcodes(self, secondbarcode, secondbar_replaceInf, write=False, writefilename = None, param = {}):
         """
