@@ -14,7 +14,7 @@ class PointCloud(object):
         '''
         self.points = np.array(matrixofpoints, dtype=float)
         self.size = self.points.shape[0]
-        self.dimension = self.points.shape[1]
+        self.dimension = self.points.shape[1] # dimension of the point cloud is not important. we omit it
         self.distmat = None
 
     def __getitem__(self, item):
@@ -40,23 +40,37 @@ class PointCloud(object):
             raise Exception("Distance matrix does not exists.")
 
 
-class GraphPointcloud(PointCloud):
+class GraphPointcloud():
     def __init__(self, nxgraph):
-        super(GraphPointcloud, self).__init__(nxgraph.nodes)
         assert isinstance(nxgraph, nx.Graph)
         self.graph = nxgraph
         self.distmat = None
         self.size = len(nxgraph)
+        self.maxdist = np.inf
 
     def compute_distancematrix(self):
-        self.distmat = nx.floyd_warshall_numpy()
+        """
+        compute the normalized distance matrix.
+        """
+        self.distmat = nx.floyd_warshall_numpy(self.graph)
+
+        if np.isinf(self.distmat).any():
+            print "Warning: the graph is disconnected."
+            self.maxdist = self.distmat[np.isfinite(self.distmat)].max()  # find the max among the finite elements
+            df = np.nan_to_num(self.distmat)  # Replace INFINITY entries with some large finite float
+            self.distmat = (df - df.min()) / (self.maxdist - self.distmat.min())  # this is ok for large floats
+        else:
+            self.maxdist = self.distmat.max()
+            self.distmat = (self.distmat - self.distmat.min()) / (self.maxdist - self.distmat.min())
 
     def getdistance(self, index_i, index_j):
-        return self.distmat[index_i][index_j]
+        return self.distmat[index_i, index_j]
 
     def __getitem__(self, index):
         return self.graph.nodes.keys()[index]
 
+    def __len__(self):
+        return self.size
 
 class MatlabPointCloud(PointCloud):
     def __init__(self, matlabfilename, varname):
