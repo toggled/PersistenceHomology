@@ -6,8 +6,8 @@ __author__ = 'Naheed'
 import math
 from itertools import combinations
 import numpy as np
-from src.WitnessFiltration import WitnessStream
-from src.simplex import KSimplex
+from WitnessFiltration import WitnessStream
+from simplex import KSimplex
 import networkx as nx
 from memory_profiler import profile
 
@@ -93,7 +93,7 @@ class WeakWitnessStream(WitnessStream):
                 if len(tau) > 1:
                     new_simplex.setBoundary()
                 self.add_simplex_to_filtration(new_simplex)
-
+                print self.totalsimplices
                 if len(tau) >= maxcardinality_simplex:
                     return
                 else:
