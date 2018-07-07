@@ -1,7 +1,5 @@
 from memory_profiler import profile
 from idmanager import getId
-from simplex import KSimplex
-from Filtration import *
 from boundaryoperator import Boundary
 
 __author__ = 'Naheed'
@@ -15,7 +13,7 @@ class IntervalComputation:
     Simpler than ComputeInterval.py file
     """
     def __init__(self, filtr, maxk, max_filtration_val):
-        assert isinstance(filtr, RealvaluedFiltration)
+        # assert isinstance(filtr, RealvaluedFiltration)
 
         self.maxdim = maxk
         self.maxfilter = max_filtration_val
